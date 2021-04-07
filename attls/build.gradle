@@ -1,0 +1,155 @@
+buildscript {
+    ext {
+        licenseGradlePluginVerion = '0.13.1'
+    }
+
+    ext.mavenRepositories = {
+        maven {
+            url artifactoryMavenSnapshotRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+        maven {
+            url artifactoryMavenRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+
+    repositories mavenRepositories
+    apply from: 'gradle/versions.gradle'
+    dependencies {
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1'
+        classpath 'net.researchgate:gradle-release:2.7.0'
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
+        classpath 'org.owasp:dependency-check-gradle:3.3.4'
+    }
+
+}
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'com.jfrog.bintray' version "${jfrogBinTrayVersion}"
+    id 'jacoco'
+    id 'com.github.hierynomus.license' version "${hierynomusLicenseVersion}"
+    id 'com.adarshr.test-logger' version "${testLoggerVersion}"
+}
+
+repositories mavenRepositories
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+version "1.0.0"
+
+ext {
+    sharedObjectFilePath = 'src/main/resources/lib/libzowe-attls.so'
+    sharedObjectFilePath2 = 'src/main/resources/lib/libzowe-attls-31.so'
+}
+
+license {
+    header rootProject.file('.licence/EPL-2.0-licence-header.txt')
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    excludes(["**/*.yml", "**/*.json", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks", "**/*.so", "**/*.md", "**/*.pub"])
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    compileOnly libraries.lombok
+
+    annotationProcessor libraries.lombok
+
+    testImplementation libraries.junitJupiter
+    testImplementation libraries.mockito_core
+    testImplementation libraries.mockito_jupiter
+    testImplementation group: 'org.springframework', name: 'spring-test', version: '5.2.13.RELEASE'
+}
+
+configurations.all {
+    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    exclude group: 'junit', module: 'junit'
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
+
+test {
+    useJUnitPlatform()
+}
+
+testlogger {
+    theme 'mocha'
+}
+
+jacoco {
+    toolVersion = '0.8.4'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+    doLast {
+        println "JaCoCo Test report from Commons Spring written to: ${jacocoTestReport.reports.html.destination}/index.html"
+    }
+}
+
+task testJar(type: Jar) {
+    baseName = project.name + '-tests'
+    from sourceSets.test.output
+    from 'src/main/resources'
+}
+
+jacocoTestReport.dependsOn test
+
+check.dependsOn jacocoTestReport
+
+compileJava.dependsOn(processResources)
+
+task zosbuild(type: Exec) {
+    inputs.dir('zossrc').withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.cacheIf { true }
+    outputs.file(sharedObjectFilePath)
+    outputs.file(sharedObjectFilePath2)
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'zowe-api-dev.cmd', 'zosbuild'
+    } else {
+        commandLine 'npx', 'zowe-api-dev', 'zosbuild'
+    }
+}
+
+task checkSharedObject {
+    doFirst {
+        def f = new File(projectDir, sharedObjectFilePath)
+        if (!f.exists()) {
+            throw new GradleException("Shared object $sharedObjectFilePath is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
+        }
+        def f2 = new File(projectDir, sharedObjectFilePath2)
+        if (!f2.exists()) {
+            throw new GradleException("Shared object $sharedObjectFilePath2 is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
+        }
+    }
+}
+
+jar.dependsOn checkSharedObject
