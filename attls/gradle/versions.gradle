@@ -1,0 +1,16 @@
+ext {
+    jfrogBinTrayVersion = "1.8.5"
+    hierynomusLicenseVersion = "0.15.0"
+    testLoggerVersion = "2.0.0"
+    lombokVersion = '1.18.16'
+    junitJupiterVersion = '5.5.2'
+    mockitoCoreVersion = '2.23.4'
+    libraries = [
+            lombok         : "org.projectlombok:lombok:${lombokVersion}",
+            junitJupiter   : "org.junit.jupiter:junit-jupiter:${junitJupiterVersion}",
+
+            mockito_core   : "org.mockito:mockito-core:${mockitoCoreVersion}",
+            mockito_jupiter: "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
+    ]
+
+}
