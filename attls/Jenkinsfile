@@ -1,0 +1,16 @@
+pipeline {
+
+    agent{
+        label 'zowe-jenkins-agent'
+    }
+
+    stages{
+
+        stage('Install tools'){
+            steps{
+                sh 'npm install -g @zowe/cli'
+                sh 'npm -g install @zowedev/zowe-api-dev'
+            }
+        }
+    }
+}
