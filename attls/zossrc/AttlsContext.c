@@ -642,23 +642,7 @@ JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiated
     return out;
 }
 
-/**
- * Return or load and cache value AttlsContext.negotiatedKeyShareCache
- */
-JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiatedKeyShare(JNIEnv *env, jobject obj)
-{
-    jstring out = (*env) -> GetObjectField(env, obj, negotiated_key_share_cache_field);
-    if (out) return out;
 
-    struct TTLS_IOCTL ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
-
-    out = get_jstring(env, ioctl.TTLSi_Neg_KeyShare, 4);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
-
-    (*env) -> SetObjectField(env, obj, negotiated_key_share_cache_field, out);
-    return out;
-}
 
 /**
  * Return or load and cache value AttlsContext.certificateCache
@@ -728,15 +712,7 @@ JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_allowHandShakeTi
     issueCommand(env, obj, TTLS_ALLOW_HSTIMEOUT);
 }
 
-JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_resetWriteCipher(JNIEnv *env, jobject obj)
-{
-    issueCommand(env, obj, TTLS_RESET_WRITE_CIPHER);
-}
 
-JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_sendSessionTicket(JNIEnv *env, jobject obj)
-{
-    issueCommand(env, obj, TTLS_SEND_SESSION_TICKET);
-}
 
 /**
  * Free memory using for EnumMap structs and delete global references used in cached values.

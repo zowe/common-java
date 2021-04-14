@@ -98,13 +98,6 @@ JNIEXPORT jbyte JNICALL Java_org_zowe_commons_attls_AttlsContext_getFlags
 JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiatedCipher4
   (JNIEnv *, jobject);
 
-/*
- * Class:     org_zowe_commons_attls_AttlsContext
- * Method:    getNegotiatedKeyShare
- * Signature: ()Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiatedKeyShare
-  (JNIEnv *, jobject);
 
 /*
  * Class:     org_zowe_commons_attls_AttlsContext
