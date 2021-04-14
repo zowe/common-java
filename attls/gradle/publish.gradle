@@ -1,14 +1,13 @@
-
 ext.javaLibraries = [
     'attls'
 ]
 ext.projectsToPublish = ext.javaLibraries
 
 ext.publishTasksList = projectsToPublish.collect {
-    it.equals(springBootEnabler) ? "publishEnablers" : ":" + it + ":publish"
+    ":publish"
 }
 
-configure(subprojects.findAll { it.name in projectsToPublish }) {
+configure(subprojects.findAll { true }) {
     apply plugin: "maven"
     apply plugin: 'maven-publish'
     apply plugin: 'java'

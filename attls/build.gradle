@@ -22,6 +22,8 @@ buildscript {
 
     repositories mavenRepositories
     apply from: 'gradle/versions.gradle'
+    apply from: 'gradle/license.gradle'
+    apply from: 'gradle/publish.gradle'
     dependencies {
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1'
         classpath 'net.researchgate:gradle-release:2.7.0'
