@@ -51,7 +51,7 @@ pipeline {
                 dir("attls"){
                     withCredentials(serverCredentials) {
                         sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_1_SSH_HOST} --port ${MARIST_1_SSH_PORT} --user ${MARIST_1_SSH_USER} --password ${MARIST_1_SSH_PASSWORD}"
-                        sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_1_SSH_HOST} --port 10443 --user ${MARIST_1_SSH_USER} --pass ${MARIST_1_SSH_USER} --reject-unauthorized false"
+                        sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_1_SSH_HOST} --port 10443 --user ${MARIST_1_SSH_USER} --pass ${MARIST_1_SSH_PASSWORD} --reject-unauthorized false"
                         sh "./gradlew zosbuild"
                     }
                 }
