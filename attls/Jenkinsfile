@@ -1,3 +1,4 @@
+def serverCredentials = []
 Map TEST_SERVERS = [
         'marist': [
                 ansible_host     : 'marist-1',
