@@ -4,7 +4,6 @@
     "zosSourcesDir": "zossrc",
     "buildCommand": "make && make install",
     "buildFiles": {
-        "libzowe-attls-31.so": "src/main/resources/lib/libzowe-attls-31.so",
         "libzowe-attls.so": "src/main/resources/lib/libzowe-attls.so"
     },
     "defaultDirName": "zowe-rest-api-attls",
