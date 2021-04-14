@@ -51,6 +51,7 @@ version "1.0.0"
 
 ext {
     sharedObjectFilePath = 'src/main/resources/lib/libzowe-attls.so'
+    sharedObjectFilePath2 = 'src/main/resources/lib/libzowe-attls-31.so'
 }
 
 license {
