@@ -131,6 +131,7 @@ task zosbuild(type: Exec) {
     inputs.dir('zossrc').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.cacheIf { true }
     outputs.file(sharedObjectFilePath)
+    outputs.file(sharedObjectFilePath2)
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
         commandLine 'zowe-api-dev.cmd', 'zosbuild'
     } else {
@@ -143,6 +144,10 @@ task checkSharedObject {
         def f = new File(projectDir, sharedObjectFilePath)
         if (!f.exists()) {
             throw new GradleException("Shared object $sharedObjectFilePath is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
+        }
+        def f2 = new File(projectDir, sharedObjectFilePath2)
+        if (!f2.exists()) {
+            throw new GradleException("Shared object $sharedObjectFilePath2 is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
         }
     }
 }
