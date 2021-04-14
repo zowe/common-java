@@ -1,15 +1,53 @@
+Map TEST_SERVERS = [
+        'marist': [
+                ansible_host     : 'marist-1',
+                ssh_hostport     : 'ssh-marist-server-zzow01-hostport',
+                ssh_userpass     : 'ssh-marist-server-zzow01',
+                node_home_pattern: '/ZOWE/node/node-{NODE_VERSION}-os390-s390x'
+        ],
+        'marist-2': [
+                ansible_host     : 'marist-2',
+                ssh_hostport     : 'ssh-marist-server-zzow02-hostport',
+                ssh_userpass     : 'ssh-marist-server-zzow02'
+        ],
+        'marist-3': [
+                ansible_host     : 'marist-3',
+                ssh_hostport     : 'ssh-marist-server-zzow03-hostport',
+                ssh_userpass     : 'ssh-marist-server-zzow03'
+        ]
+];
+TEST_SERVERS.each{ key, host ->
+    def hostKey = host['ansible_host'].replaceAll(/[^A-Za-z0-9]/, '_').toUpperCase()
+    serverCredentials.add(usernamePassword(
+            credentialsId: host['ssh_hostport'],
+            passwordVariable: "${hostKey}_SSH_PORT".toString(),
+            usernameVariable: "${hostKey}_SSH_HOST".toString()
+    ))
+    serverCredentials.add(usernamePassword(
+            credentialsId: host['ssh_userpass'],
+            passwordVariable: "${hostKey}_SSH_PASSWORD".toString(),
+            usernameVariable: "${hostKey}_SSH_USER".toString()
+    ))
+}
 pipeline {
 
     agent{
         label 'zowe-jenkins-agent'
     }
-
     stages{
+
 
         stage('Install tools'){
             steps{
+
                 sh 'npm install -g @zowe/cli'
                 sh 'npm -g install @zowedev/zowe-api-dev'
+            }
+        }
+        stage('Build'){
+            withCredentials(serverCredentials) {
+                sh "zowe profiles create ssh-profile maristzowe --host MARIST-1_SSH_HOST --port MARIST-1_SSH_PORT --user MARIST-1_SSH_USER --password \"MARIST-1_SSH_PASSWORD\""
+                sh ""
             }
         }
     }
