@@ -43,7 +43,6 @@ pipeline {
 
                 sh 'npm install -g @zowe/cli'
                 sh 'npm -g install @zowedev/zowe-api-dev'
-                sh 'sdk install gradle 7.0'
             }
         }
 
