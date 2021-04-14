@@ -5,7 +5,7 @@
         "//APMLBLD JOB ",
         "/*JOBPARM SYSAFF=*"
     ],
-    "zosHlq": "ZOWEAD3.ZWE.APISDK.MAIN",
-    "zosTargetDir": "/ZOWE/zowe-installs/apidev",
+    "zosHlq": "ZOWEAD3.ZWE.APISDK",
+    "zosTargetDir": "/ZOWE/zowe-installs",
     "zoweProfileName": "maristzowe"
 }
