@@ -50,7 +50,7 @@ pipeline {
             steps{
                 dir("attls"){
                     withCredentials(serverCredentials) {
-                        sh "zowe profiles create ssh-profile maristzowe --host ${MARIST-1_SSH_HOST} --port ${MARIST-1_SSH_PORT} --user ${MARIST-1_SSH_USER} --password \"${MARIST-1_SSH_PASSWORD}\""
+                        sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_1_SSH_HOST} --port ${MARIST_1_SSH_PORT} --user ${MARIST_1_SSH_USER} --password \"${MARIST_1_SSH_PASSWORD}\""
                         sh "gradle zosbuild"
                     }
                 }
