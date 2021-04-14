@@ -184,14 +184,6 @@ public class AttlsContext {
      */
     public native String getNegotiatedCipher4() throws IoctlCallException;
 
-    /**
-     * Indicates the four character negotiated key share in use for the connection - returned when the connection is
-     * secure and the protocol in use is TLS 1.3 or later
-     *
-     * @return four character negotiated key share in use for the connection
-     * @throws IoctlCallException unexpected error in call of ioctl
-     */
-    public native String getNegotiatedKeyShare() throws IoctlCallException;
 
     /**
      * Returns partner certificate - returned when available. Maximum length of certificate is determinated by
@@ -237,18 +229,5 @@ public class AttlsContext {
      */
     public native void allowHandShakeTimeout() throws IoctlCallException;
 
-    /**
-     * Reset the write cipher (TLSv1.3 or later)
-     *
-     * @throws IoctlCallException cannot reset write cipher (ie. not in controlled mode, missing configuration etc.)
-     */
-    public native void resetWriteCipher() throws IoctlCallException;
-
-    /**
-     * Send session ticket (TLSv1.3 or later)
-     *
-     * @throws IoctlCallException cannot send session ticket (ie. not in controlled mode, missing configuration etc.)
-     */
-    public native void sendSessionTicket() throws IoctlCallException;
 
 }
