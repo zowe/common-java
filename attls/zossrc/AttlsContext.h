@@ -147,21 +147,7 @@ JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_stopConnection
 JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_allowHandShakeTimeout
   (JNIEnv *, jobject);
 
-/*
- * Class:     org_zowe_commons_attls_AttlsContext
- * Method:    resetWriteCipher
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_resetWriteCipher
-  (JNIEnv *, jobject);
 
-/*
- * Class:     org_zowe_commons_attls_AttlsContext
- * Method:    sendSessionTicket
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_sendSessionTicket
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }
