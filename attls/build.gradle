@@ -23,7 +23,6 @@ buildscript {
     repositories mavenRepositories
     apply from: 'gradle/versions.gradle'
     apply from: 'gradle/license.gradle'
-    apply from: 'gradle/publish.gradle'
     dependencies {
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1'
         classpath 'net.researchgate:gradle-release:2.7.0'
@@ -155,3 +154,35 @@ task checkSharedObject {
 }
 
 jar.dependsOn checkSharedObject
+
+publishing {
+    repositories.maven {
+        credentials {
+            username project.getProperty("zowe.deploy.username")
+            password project.getProperty("zowe.deploy.password")
+        }
+
+        setUrl(artifactoryPublishingMavenSnapshotRepo)
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'org.zowe.apiml.sdk'
+            version rootProject.version
+            artifactId "${project.name}"
+
+
+            from components.java
+
+            pom.withXml {
+                asNode().dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each { it.scope*.value = 'compile' }
+            }
+        }
+    }
+}
