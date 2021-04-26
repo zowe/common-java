@@ -38,7 +38,8 @@ pipeline {
     }
 
     parameters {
-        booleanParam(name: 'RELEASE', defaultValue: false, description: 'Toggle this for release')
+        booleanParam(name: 'RELEASE', defaultValue: false, description: 'Toggle this to publish release')
+        booleanParam(name: 'SNAPSHOT', defaultValue: false, description: 'Toggle this to publish snapshot')
     }
     stages{
 
@@ -72,13 +73,14 @@ pipeline {
                 dir("attls") {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         script {
-                            if(params.RELEASE){
-                                sh '''
-                            echo "HELLO"
-                            '''
-                            } else {
+                            if(params.SNAPSHOT) {
                                 sh '''
                  ./gradlew publish -x test -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
+                 '''
+                            }
+                            if(params.RELEASE){
+                                sh '''
+                 ./gradlew release -x test -Prelease.useAutomaticVersion=true -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
                  '''
                             }
                         }
