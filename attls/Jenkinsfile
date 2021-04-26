@@ -68,16 +68,17 @@ pipeline {
             steps {
                 dir("attls") {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                       if(${params.RELEASE}){
-                           sh '''
+                        script {
+                            if(${params.RELEASE}){
+                                sh '''
                             echo "HELLO"
                             '''
-                       } else {
-                           sh '''
+                            } else {
+                                sh '''
                  ./gradlew publish -x test -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
                  '''
-                       }
-
+                            }
+                        }
                     }
                 }
             }
