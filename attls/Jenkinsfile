@@ -36,6 +36,10 @@ pipeline {
     agent{
         label 'zowe-jenkins-agent'
     }
+
+    parameters {
+        booleanParam(name: 'RELEASE', defaultValue: false, description: 'Toggle this for release')
+    }
     stages{
 
 
@@ -64,9 +68,16 @@ pipeline {
             steps {
                 dir("attls") {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        sh '''
+                       if(${params.RELEASE}){
+                           sh '''
+                            echo "HELLO"
+                            '''
+                       } else {
+                           sh '''
                  ./gradlew publish -x test -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
                  '''
+                       }
+
                     }
                 }
             }
