@@ -23,8 +23,8 @@ MACLIBS=-ISYS1.MACLIB \
  -ICBC.SCCNSAM
 
 MTL_HEADERS=-I/usr/include/metal
-JAVA_HOME_31 := /sys/java31bt/v8r0m0/usr/lpp/java/J8.0
-JAVA_HOME_64 := /sys/java64bt/v8r0m0/usr/lpp/java/J8.0_64
+JAVA_HOME_31 := /usr/lpp/java/J8.0
+JAVA_HOME_64 := /usr/lpp/java/J8.0_64
 
 DLL_CPP_FLAGS_31=-W "c,langlvl(extended),dll,xplink,exportall" \
   $(ZOS_BUILD_INFO) \

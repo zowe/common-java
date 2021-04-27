@@ -1,0 +1,16 @@
+ext.projectsNeedLicense = [
+    'attls'
+]
+
+configure(subprojects.findAll { it.name in projectsNeedLicense }) {
+    tasks.withType(Jar) {
+        metaInf {
+            from rootProject.file("LICENSE")
+        }
+
+        manifest {
+            attributes "Bundle-License": "https://www.eclipse.org/legal/epl-v20.html"
+        }
+    }
+
+}

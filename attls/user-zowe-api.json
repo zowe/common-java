@@ -1,0 +1,11 @@
+{
+    "javaHome": "/usr/lpp/java/J8.0_64",
+    "javaLoadlib": "",
+    "jobcard": [
+        "//APMLBLD JOB ",
+        "/*JOBPARM SYSAFF=*"
+    ],
+    "zosHlq": "ZOWEAD3.ZWE.APISDK",
+    "zosTargetDir": "/ZOWE/zowe-installs",
+    "zoweProfileName": "maristzowe"
+}
