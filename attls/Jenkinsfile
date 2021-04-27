@@ -71,12 +71,13 @@ pipeline {
                         script {
                             if (params.SNAPSHOT) {
                                 sh '''
-                  git checkout master
+                  
                  ./gradlew publish -x test -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
                  '''
                             }
                             if (params.RELEASE) {
                                 sh '''
+                    git checkout master
                  ./gradlew release -x test -Prelease.useAutomaticVersion=true -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
                  '''
                             }
