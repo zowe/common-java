@@ -171,10 +171,6 @@ public class InboundAttlsTest {
         testSameGetter("getNegotiatedCipher4", "ABCD", "", "QWER");
     }
 
-    @Test
-    public void testNegotiatedKeyShare() {
-        testSameGetter("getNegotiatedKeyShare", "shared1", "", "shared2");
-    }
 
     @Test
     public void testCertificate() {
