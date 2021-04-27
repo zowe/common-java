@@ -154,16 +154,6 @@ public class InboundAttls {
     }
 
     /**
-     * Call {@link AttlsContext#getNegotiatedKeyShare()} for incoming call of this thread.
-     * @return four character negotiated key share in use for the connection
-     * @throws ContextIsNotInitializedException when no context was initialized
-     * @throws IoctlCallException unexpected error in call of ioctl
-     */
-    public static String getNegotiatedKeyShare() throws ContextIsNotInitializedException, IoctlCallException {
-        return get().getNegotiatedKeyShare();
-    }
-
-    /**
      * Call {@link AttlsContext#getCertificate()} for incoming call of this thread.
      * @return partner certificate
      * @throws ContextIsNotInitializedException when no context was initialized
