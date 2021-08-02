@@ -176,12 +176,13 @@ publishing {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
             artifactId "${project.name}"
-            artifact("src/main/resources/libzowe-attls.so")
 
             from components.java
+
 
             pom.withXml {
                 asNode().dependencies.'*'.findAll() {
@@ -190,6 +191,7 @@ publishing {
                     }
                 }.each { it.scope*.value = 'compile' }
             }
+            artifact "src/main/resources/libzowe-attls.so"
         }
     }
 }
