@@ -180,17 +180,6 @@ publishing {
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
             artifactId "${project.name}"
-
-            from components.java
-
-
-            pom.withXml {
-                asNode().dependencies.'*'.findAll() {
-                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
-                        dep.name == it.artifactId.text()
-                    }
-                }.each { it.scope*.value = 'compile' }
-            }
             artifact "src/main/resources/libzowe-attls.so"
         }
     }
