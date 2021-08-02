@@ -180,7 +180,7 @@ publishing {
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
             artifactId "${project.name}"
-            artifact "src/main/resources/libzowe-attls.so"
+            artifact "src/main/resources/lib/libzowe-attls.so"
         }
     }
 }
