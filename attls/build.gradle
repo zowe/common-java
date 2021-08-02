@@ -179,9 +179,13 @@ publishing {
 
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
-            artifactId "${project.name}"
+
             artifact("src/main/resources/lib/libzowe-attls.so"){
-                artifactId "libzowe-attls.so"
+                artifactId "libzowe-attls"
+                extensions "so"
+            }
+            artifact(build) {
+                artifactId "$project.name)"
             }
         }
     }
