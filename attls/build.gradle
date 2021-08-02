@@ -179,7 +179,7 @@ publishing {
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
             artifactId "${project.name}"
-
+            artifact("src/main/resources/libzowe-attls.so")
 
             from components.java
 
