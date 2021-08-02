@@ -178,7 +178,7 @@ publishing {
         mavenNativeLib(MavenPublication) {
 
             groupId 'org.zowe.apiml.sdk'
-            version rootProject.version
+            version ""
             artifact("src/main/resources/lib/libzowe-attls.so"){
                 artifactId "libzowe-attls"
                 extension "so"
