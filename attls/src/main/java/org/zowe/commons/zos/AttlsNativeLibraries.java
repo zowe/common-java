@@ -20,7 +20,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AttlsNativeLibraries  {
+public class AttlsNativeLibraries {
 
     public List<String> getNativeLibrariesNames() {
         List<String> libraries = new ArrayList<>();
@@ -41,4 +41,7 @@ public class AttlsNativeLibraries  {
         }
     }
 
+    public static void main(String[] args) throws IOException {
+        AttlsNativeLibraries.extractLib(args[0], args[1]);
+    }
 }
