@@ -175,17 +175,29 @@ publishing {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        mavenNativeLib(MavenPublication) {
 
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
-
             artifact("src/main/resources/lib/libzowe-attls.so"){
                 artifactId "libzowe-attls"
-                extensions "so"
+                extension "so"
             }
-            artifact(build) {
-                artifactId "$project.name)"
+        }
+        mavenJava(MavenPublication) {
+            groupId 'org.zowe.apiml.sdk'
+            version rootProject.version
+            artifactId "${project.name}"
+            artifact("src/main/resources/libzowe-attls.so")
+
+            from components.java
+
+            pom.withXml {
+                asNode().dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each { it.scope*.value = 'compile' }
             }
         }
     }
