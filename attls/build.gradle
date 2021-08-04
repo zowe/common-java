@@ -142,6 +142,13 @@ task zosbuild(type: Exec) {
     }
 }
 
+task zip(type: Zip) {
+    archiveFileName = "libzowe-attls.zip"
+    destinationDirectory = file('src/main/resources/')
+    from file('src/main/resources/lib')
+}
+
+zip.dependsOn(build)
 task checkSharedObject {
     doFirst {
         def f = new File(projectDir, sharedObjectFilePath)
@@ -179,9 +186,9 @@ publishing {
 
             groupId 'org.zowe.apiml.sdk'
             version rootProject.version
-            artifact("src/main/resources/lib/libzowe-attls.so"){
+            artifact("src/main/resources/lib/libzowe-attls.zip"){
                 artifactId "libzowe-attls"
-                extension "so"
+                extension "zip"
             }
         }
         mavenJava(MavenPublication) {
