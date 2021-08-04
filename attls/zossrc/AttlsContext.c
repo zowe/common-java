@@ -460,7 +460,7 @@ struct TTLS_IOCTL* load(JNIEnv *env, jobject obj, jboolean certificate)
 struct TTLS_IOCTL* requireQuery(JNIEnv *env, jobject obj)
 {
     if (isQueryLoaded(env, obj)) return getIoctl(env,obj);
-    return load(env, obj, JNI_TRUE, JNI_FALSE);
+    return load(env, obj, JNI_FALSE);
 }
 
 /**
@@ -469,7 +469,7 @@ struct TTLS_IOCTL* requireQuery(JNIEnv *env, jobject obj)
 struct TTLS_IOCTL* requireCertificate(JNIEnv *env, jobject obj)
 {
     if (isCertificateLoaded(env, obj)) return getIoctl(env,obj);
-    return load(env, obj, JNI_FALSE, JNI_TRUE);
+    return load(env, obj, JNI_TRUE);
 }
 
 /**
