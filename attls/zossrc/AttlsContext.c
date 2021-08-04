@@ -492,6 +492,11 @@ JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_clean(JNIEnv *en
     (*env) -> SetBooleanField(env, obj, query_loaded_field, JNI_FALSE);
     (*env) -> SetBooleanField(env, obj, certificate_loaded_field, JNI_FALSE);
 
+    // clean all bytearrays
+     cleanByteArray(env, (*env) -> GetObjectField(env, obj, ioctl_field));
+     cleanByteArray(env, (*env) -> GetObjectField(env, obj, buffer_certificate_field));
+     cleanByteArray(env, (*env) -> GetObjectField(env, obj, certificate_cache_field));
+
     // clean all cached values (Java objects)
     (*env) -> SetObjectField(env, obj, ioctl_field, NULL);
     (*env) -> SetObjectField(env, obj, buffer_certificate_field, NULL);
