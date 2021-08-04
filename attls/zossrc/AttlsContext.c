@@ -372,6 +372,17 @@ jbyteArray createIoctl(JNIEnv *env, jobject obj)
     return array;
 }
 
+void releaseIoctl(JNIEnv *env, jobject obj, struct TTLS_IOCTL* ioctl)
+{
+    if (ioctl->TTLSi_BufferPtr) {
+        jbyteArray certArray = (*env) -> GetObjectField(env, obj, buffer_certificate_field);
+        (*env) -> ReleaseByteArrayElements(env, certArray, (jbyte*) ioctl->TTLSi_BufferPtr, 0);
+    }
+
+    jbyteArray ioctlArray = (*env) -> GetObjectField(env, obj, ioctl_field);
+    (*env) -> ReleaseByteArrayElements(env, ioctlArray, (jbyte*) ioctl, 0);
+}
+
 /**
  * Returns request for ioctl, if it has not created, create new one.
  */
@@ -505,12 +516,19 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getStatPolicy
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+        releaseIoctl(env, obj, ioctl);
+        return NULL;
+    }
 
     out = get_enum(env, stat_policy_enum_map, ioctl->TTLSi_Stat_Policy);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+        releaseIoctl(env, obj, ioctl);
+        return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, stat_policy_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -523,12 +541,19 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getStatConn(J
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+      releaseIoctl(env, obj, ioctl);
+      return NULL;
+    }
 
     out = get_enum(env, stat_conn_enum_map, ioctl->TTLSi_Stat_Conn);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+      releaseIoctl(env, obj, ioctl);
+      return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, stat_conn_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -541,7 +566,10 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getProtocol(J
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+         releaseIoctl(env, obj, ioctl);
+         return NULL;
+    }
 
     // call static method Protocol.valueOf(byte, byte)
     out = (*env) -> CallStaticObjectMethod(env, enum_protocol_clazz, protocol_value_of_method_ID,
@@ -556,10 +584,12 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getProtocol(J
             (jbyte) ioctl->TTLSi_SSL_Protocol.Prot_bytes.Prot_Ver,
             (jbyte) ioctl->TTLSi_SSL_Protocol.Prot_bytes.Prot_Mod);
         (*env) -> Throw(env, exception);
+        releaseIoctl(env, obj, ioctl);
         return NULL;
     }
 
     (*env) -> SetObjectField(env, obj, protocol_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -572,12 +602,18 @@ JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiated
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+        releaseIoctl(env, obj, ioctl);
+        return NULL;
+    }
 
     out = get_jstring(env, ioctl->TTLSi_Neg_Cipher, 2);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
-
+    if ((*env) -> ExceptionCheck(env)) {
+      releaseIoctl(env, obj, ioctl);
+      return NULL;
+    }
     (*env) -> SetObjectField(env, obj, negotiated_cipher2_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -590,12 +626,19 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getSecurityTy
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     out = get_enum(env, security_type_enum_map, ioctl->TTLSi_Sec_Type);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, security_type_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -608,12 +651,19 @@ JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getUserId(JNI
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     out = get_jstring(env, ioctl->TTLSi_UserID, ioctl->TTLSi_UserID_Len);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, user_id_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -626,12 +676,19 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getFips140(JN
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     out = get_enum(env, fips140_enum_map, ioctl->TTLSi_FIPS140);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, fips140_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -641,8 +698,13 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getFips140(JN
 JNIEXPORT jbyte JNICALL Java_org_zowe_commons_attls_AttlsContext_getFlags(JNIEnv *env, jobject obj)
 {
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return 0;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return 0;
+    }
 
+    jbyte out = (jbyte) ioctl->TTLSi_Flags;
+    releaseIoctl(env, obj, ioctl);
     return (jbyte) ioctl->TTLSi_Flags;
 }
 
@@ -655,12 +717,19 @@ JNIEXPORT jstring JNICALL Java_org_zowe_commons_attls_AttlsContext_getNegotiated
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireQuery(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+     releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     out = get_jstring(env, ioctl->TTLSi_Neg_Cipher4, 4);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+     releaseIoctl(env, obj, ioctl);
+     return NULL;
+    }
 
     (*env) -> SetObjectField(env, obj, negotiated_cipher4_cache_field, out);
+     releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -675,12 +744,16 @@ JNIEXPORT jbyteArray JNICALL Java_org_zowe_commons_attls_AttlsContext_getCertifi
     if (out) return out;
 
     struct TTLS_IOCTL* ioctl = requireCertificate(env, obj);
-    if ((*env) -> ExceptionCheck(env)) return NULL;
+    if ((*env) -> ExceptionCheck(env)) {
+    releaseIoctl(env, obj, ioctl);
+    return NULL;
+    }
 
     out = (*env) -> NewByteArray(env, ioctl->TTLSi_Cert_Len);
     (*env) -> SetByteArrayRegion(env, out, 0, ioctl->TTLSi_Cert_Len, ioctl->TTLSi_BufferPtr);
 
     (*env) -> SetObjectField(env, obj, certificate_cache_field, out);
+    releaseIoctl(env, obj, ioctl);
     return out;
 }
 
@@ -698,6 +771,7 @@ void issueCommand(JNIEnv *env, jobject obj, int command)
     ioc->TTLSi_BufferLen = 0;
 
     int rcIoctl = ioctl(getSocket(env, obj), SIOCTTLSCTL, (char *) ioc);
+     releaseIoctl(env, obj, ioc);
 
     if (rcIoctl < 0) {
         jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_IOCTL_CALL_EXCEPTION);
