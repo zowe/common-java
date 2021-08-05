@@ -172,6 +172,12 @@ EnumMap* fips140_enum_map;
 jclass enum_protocol_clazz;
 jmethodID protocol_value_of_method_ID;
 
+/**
+ * Class Arrays and method Arrays.fill(byte[], byte) to clean byte arrays
+ */
+jclass arraysClass;
+jmethodID arrays_fill_method_ID;
+
 int strnlen(char *txt, int max) {
     if (max < 0) return 0;
     for (int i = 0; i < max; i++) {
@@ -343,6 +349,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     enum_protocol_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_PROTOCOL));
     protocol_value_of_method_ID = (*env) -> GetStaticMethodID(env, enum_protocol_clazz, JNI_METHOD_VALUE_OF, JNI_SIGNATURE_METHOD_BYTE_BYTE_PROTOCOL);
 
+    // find method Arrays.fill for byte array clean up
+    arraysClass = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_SIGNATURE_ARRAYS));
+    arrays_fill_method_ID = (*env) -> GetStaticMethodID(env, arraysClass, JNI_SIGNATURE_ARRAYS_FILL, JNI_SIGNATURE_METHOD_BYTE_ARRAY_BYTE_VOID);
+
     return JNI_VERSION;
 }
 
@@ -481,6 +491,13 @@ struct TTLS_IOCTL* requireCertificate(JNIEnv *env, jobject obj)
 {
     if (isCertificateLoaded(env, obj)) return getIoctl(env,obj);
     return load(env, obj, JNI_TRUE);
+}
+
+void cleanByteArray(JNIEnv *env, jbyteArray arr)
+{
+    if (!arr) return;
+
+    (*env) -> CallStaticVoidMethod(env, arraysClass, arrays_fill_method_ID, arr, (jbyte) 0);
 }
 
 /**
