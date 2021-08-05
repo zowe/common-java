@@ -1,0 +1,4 @@
+rootProject.name = 'common-java'
+
+include 'attls'
+include 'common-java-lib-package'

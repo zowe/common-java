@@ -1,70 +1,16 @@
-import java.util.regex.Matcher
-
-buildscript {
-    ext {
-        licenseGradlePluginVerion = '0.13.1'
-    }
-
-    ext.mavenRepositories = {
-        maven {
-            url artifactoryMavenSnapshotRepo
-            credentials {
-                username mavenUser
-                password mavenPassword
-            }
-        }
-        maven {
-            url artifactoryMavenRepo
-            credentials {
-                username mavenUser
-                password mavenPassword
-            }
-        }
-    }
-
-    repositories mavenRepositories
-    apply from: 'gradle/versions.gradle'
-    apply from: 'gradle/license.gradle'
-    dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1'
-        classpath 'net.researchgate:gradle-release:2.7.0'
-        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
-        classpath 'org.owasp:dependency-check-gradle:3.3.4'
-    }
-
-}
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'com.jfrog.bintray' version "${jfrogBinTrayVersion}"
     id 'jacoco'
-    id 'com.github.hierynomus.license' version "${hierynomusLicenseVersion}"
     id 'com.adarshr.test-logger' version "${testLoggerVersion}"
 }
-
-repositories mavenRepositories
-
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
-
-compileJava.options.encoding = "UTF-8"
-compileTestJava.options.encoding = "UTF-8"
-
-version = version
 
 ext {
     sharedObjectFilePath = 'src/main/resources/lib/libzowe-attls.so'
     sharedObjectFilePath2 = 'src/main/resources/lib/libzowe-attls-31.so'
 }
 
-license {
-    header rootProject.file('.licence/EPL-2.0-licence-header.txt')
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    excludes(["**/*.yml", "**/*.json", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks", "**/*.so", "**/*.md", "**/*.pub"])
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
-}
+
 
 configurations {
     compileOnly {
@@ -142,13 +88,10 @@ task zosbuild(type: Exec) {
     }
 }
 
-task zip(type: Zip) {
-    archiveFileName = "libzowe-attls.zip"
-    destinationDirectory = file('src/main/resources/')
-    from file('src/main/resources/lib')
+task prepareKotlinBuildScriptModel {
+
 }
 
-zip.dependsOn(build)
 task checkSharedObject {
     doFirst {
         def f = new File(projectDir, sharedObjectFilePath)
@@ -164,92 +107,16 @@ task checkSharedObject {
 
 jar.dependsOn checkSharedObject
 
-publishing {
-    repositories.maven {
-        credentials {
-            username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
-            password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
-        }
-        if (version.endsWith("SNAPSHOT")) {
-            setUrl(artifactoryPublishingMavenSnapshotRepo)
-        } else {
-            setUrl(artifactoryPublishingMavenRepo)
-        }
 
-    }
+jar {
+    enabled true
 }
-
 
 publishing {
     publications {
-        mavenNativeLib(MavenPublication) {
 
-            groupId 'org.zowe.apiml.sdk'
-            version rootProject.version
-            artifact("src/main/resources/lib/libzowe-attls.zip"){
-                artifactId "libzowe-attls"
-                extension "zip"
-            }
-        }
-        mavenJava(MavenPublication) {
-            groupId 'org.zowe.apiml.sdk'
-            version rootProject.version
-            artifactId "${project.name}"
-            from components.java
-            pom.withXml {
-                asNode().dependencies.'*'.findAll() {
-                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
-                        dep.name == it.artifactId.text()
-                    }
-                }.each { it.scope*.value = 'compile' }
-            }
+        mavenJavaLib(MavenPublication) {
+            artifact jar
         }
     }
 }
-
-apply plugin: 'net.researchgate.release'
-
-ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
-
-release {
-    failOnCommitNeeded = true
-    failOnPublishNeeded = true
-    failOnSnapshotDependencies = true
-    failOnUnversionedFiles = false
-    failOnUpdateNeeded = true
-    revertOnFail = true
-    preCommitText = '[Gradle Release plugin]'
-    preTagCommitMessage = 'Before tag commit'
-    tagCommitMessage = 'Release:'
-    tagTemplate = 'v${version}'
-    newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-
-    if (releaseScope == 'minor') {
-        versionPatterns = [
-                /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
-        ]
-    } else if (releaseScope == 'major') {
-        versionPatterns = [
-                /(\d+)\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}.0.0") }
-        ]
-    } else {
-        versionPatterns = [
-                /(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}${m[0][2]}") }
-        ]
-    }
-
-    scmAdapters = [
-            net.researchgate.release.GitAdapter
-    ]
-
-    git {
-        requireBranch = 'master'
-        pushToRemote = 'origin'
-        pushToBranchPrefix = ''
-        commitVersionFileOnly = true
-        signTag = false
-    }
-}
-
-afterReleaseBuild.dependsOn publish

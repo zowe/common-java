@@ -53,20 +53,20 @@ pipeline {
 
         stage('Build') {
             steps {
-                dir("attls") {
+
                     withCredentials(serverCredentials) {
                         sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_1_SSH_HOST} --port ${MARIST_1_SSH_PORT} --user ${MARIST_1_SSH_USER} --password ${MARIST_1_SSH_PASSWORD}"
                         sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_1_SSH_HOST} --port 10443 --user ${MARIST_1_SSH_USER} --pass ${MARIST_1_SSH_PASSWORD} --reject-unauthorized false"
-                        sh "./gradlew zosbuild"
-                        sh "./gradlew zip"
+                        sh "./gradlew :attls:zosbuild"
+                        sh "./gradlew build"
                     }
-                }
+
             }
         }
 
         stage('Publish snapshot version to Artifactory for master') {
             steps {
-                dir("attls") {
+
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                         script {
                             if (params.SNAPSHOT) {
@@ -81,7 +81,7 @@ pipeline {
                             }
                         }
                     }
-                }
+
             }
         }
     }

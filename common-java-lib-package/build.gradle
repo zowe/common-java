@@ -1,0 +1,43 @@
+plugins {
+    id 'maven-publish'
+    id 'java-library'
+}
+repositories {
+    mavenCentral()
+}
+ext {
+    artifactName = 'java-common-lib-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    zip
+}
+
+task packageCommonLib(type: Zip) {
+    includeEmptyDirs = true
+    def resourceDir = 'src/main/resources/'
+
+    into('/') {
+        from "$resourceDir/manifest.yaml"
+    }
+
+    into('bin/') {
+        from "${project.rootDir}/attls/$resourceDir/lib/libzowe-attls.so"
+    }
+}
+artifacts {
+    zip packageCommonLib
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact source: packageCommonLib, extension: 'zip'
+        }
+    }
+}
+
+jar {
+    enabled false
+}
