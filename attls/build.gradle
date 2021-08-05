@@ -88,9 +88,6 @@ task zosbuild(type: Exec) {
     }
 }
 
-task prepareKotlinBuildScriptModel {
-
-}
 
 task checkSharedObject {
     doFirst {
@@ -107,10 +104,14 @@ task checkSharedObject {
 
 jar.dependsOn checkSharedObject
 
+task wrapper(){
 
-jar {
-    enabled true
 }
+
+task prepareKotlinBuildScriptModel(){
+
+}
+
 
 publishing {
     publications {
