@@ -98,6 +98,13 @@ const char *JNI_METHOD_GET_VALUE = "getValue";
  */
 const char *JNI_MESSAGE_CANNOT_CONVERT_USER_ID = "Cannot convert userID";
 
+/**
+ * signatures to get method Arrays.fill - clean up of arrays
+ */
+const char *JNI_SIGNATURE_ARRAYS = "java/util/Arrays";
+const char *JNI_SIGNATURE_ARRAYS_FILL = "fill";
+const char *JNI_SIGNATURE_METHOD_BYTE_ARRAY_BYTE_VOID = "([BB)V";
+
 #if defined(__IBMC__) || defined(__IBMCPP__)
 #pragma convert(0)
 #endif
