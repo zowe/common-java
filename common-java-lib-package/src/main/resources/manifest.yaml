@@ -1,7 +1,7 @@
 ---
-name: java-common-lib
+name: common-java-lib
 # Component identifier. This identifier matches artifact path in Zowe Artifactory https://zowe.jfrog.io/.
-id: org.zowe.apiml.sdk.java-common-lib-package
+id: org.zowe.apiml.sdk.common-java-lib-package
 # Component version is defined in gradle.properties for Gradle project
 # Human readable component name
 title: Shared directory containing the common native libraries
@@ -10,7 +10,7 @@ description: Directory that contains the API ML native libraries.
 license: EPL-2.0
 repository:
   type: git
-  url: https://github.com/zowe/api-layer.git
+  url: https://github.com/zowe/common-java.git
 build:
   branch: "{{build.branch}}"
   number: "{{build.number}}"

@@ -6,7 +6,7 @@ repositories {
     mavenCentral()
 }
 ext {
-    artifactName = 'java-common-lib-package'
+    artifactName = 'common-java-lib-package'
     pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 
