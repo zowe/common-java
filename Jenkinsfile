@@ -1,10 +1,10 @@
 def serverCredentials = []
 def ARTIFACTORY_CREDENTIALS_ID = 'zowe.jfrog.io'
 Map TEST_SERVERS = [
-        'marist'  : [
-                ansible_host     : 'marist-1',
-                ssh_hostport     : 'ssh-marist-server-zzow01-hostport',
-                ssh_userpass     : 'ssh-marist-server-zzow01',
+        'marist-4'  : [
+                ansible_host     : 'marist-4',
+                ssh_hostport     : 'ssh-marist-server-zzow04-hostport',
+                ssh_userpass     : 'ssh-marist-server-credential',
                 node_home_pattern: '/ZOWE/node/node-{NODE_VERSION}-os390-s390x'
         ],
         'marist-2': [
@@ -55,8 +55,8 @@ pipeline {
             steps {
 
                     withCredentials(serverCredentials) {
-                        sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_1_SSH_HOST} --port ${MARIST_1_SSH_PORT} --user ${MARIST_1_SSH_USER} --password ${MARIST_1_SSH_PASSWORD}"
-                        sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_1_SSH_HOST} --port 10443 --user ${MARIST_1_SSH_USER} --pass ${MARIST_1_SSH_PASSWORD} --reject-unauthorized false"
+                        sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_4_SSH_HOST} --port ${MARIST_4_SSH_PORT} --user ${MARIST_4_SSH_USER} --password ${MARIST_4_SSH_PASSWORD}"
+                        sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_4_SSH_HOST} --port 10443 --user ${MARIST_4_SSH_USER} --pass ${MARIST_4_SSH_PASSWORD} --reject-unauthorized false"
                         sh "./gradlew :attls:zosbuild"
                         sh "./gradlew build"
                     }
