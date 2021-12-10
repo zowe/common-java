@@ -10,5 +10,5 @@
 # Copyright IBM Corporation 2019, 2020
 ################################################################################
 
-chmod a+x libzowe-attls.so
-extattr +p libzowe-attls.so
+chmod a+x bin/libzowe-attls.so
+extattr +p bin/libzowe-attls.so
