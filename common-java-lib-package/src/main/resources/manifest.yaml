@@ -11,5 +11,7 @@ license: EPL-2.0
 repository:
   type: git
   url: https://github.com/zowe/common-java.git
+commands:
+  configure: bin/configure.sh
 schemas:
   configs: "trivial-schema.json"
