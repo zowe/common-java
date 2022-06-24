@@ -21,10 +21,12 @@ task packageCommonLib(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
+        from "../schemas/trivial-schema.json"
     }
 
     into('bin/') {
         from "${project.rootDir}/attls/$resourceDir/lib/libzowe-attls.so"
+        from "$resourceDir/bin/configure.sh"
     }
 }
 
