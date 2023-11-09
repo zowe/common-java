@@ -46,7 +46,7 @@ pipeline {
 
         stage('Install tools') {
             steps {
-                sh 'npm install -g @zowe/cli@6.32.2'
+                sh 'npm install -g @zowe/cli@zowe-v1-lts'
                 sh 'npm -g install @zowedev/zowe-api-dev'
             }
         }
