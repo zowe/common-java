@@ -17,10 +17,10 @@ jobs:
           fetch-depth: 0
       - name: Install Dependencies
         run: npm ci
+      - name: install zowe/cli
+        run: npm install -g @zowe/cli@6.32.2
       - name: install zowe-api-dev
         run: npm -g install @zowedev/zowe-api-dev
-      - name: install zowe/cli
-        run: npm install -g @zowe/cli@zowe-v1-lts
       - name: Build Source
         run: npm run build
 
@@ -50,10 +50,10 @@ jobs:
 
         - name: Install Dependencies
           run: npm ci
+        - name: install zowe/cli
+          run: npm install -g @zowe/cli@6.32.2
         - name: install zowe-api-dev
           run: npm -g install @zowedev/zowe-api-dev
-        - name: install zowe/cli
-          run: npm install -g @zowe/cli@zowe-v1-lts
         - name: Build Source
           run: npm run build
 
