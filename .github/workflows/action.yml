@@ -1,0 +1,88 @@
+name: common-java
+
+on: [push, pull_request]
+
+env:
+  PR_NUMBER: ${{ github.event.inputs.pull_request }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        release_type: [release, snapshot]
+
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: ./.github/actions/setup
+
+      - name: Build with Gradle
+        run: |
+#          PR_NUMBER=PR-${{ env.PR_NUMBER }}
+#          sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
+#          ./gradlew clean build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$PR_NUMBER
+          sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_4_SSH_HOST} --port ${MARIST_4_SSH_PORT} --user ${MARIST_4_SSH_USER} --password ${MARIST_4_SSH_PASSWORD}"
+          sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_4_SSH_HOST} --port 10443 --user ${MARIST_4_SSH_USER} --pass ${MARIST_4_SSH_PASSWORD} --reject-unauthorized false"
+          sh "./gradlew :attls:zosbuild"
+          sh "./gradlew build"
+        env:
+          MARIST_4_SSH_HOST: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
+          MARIST_4_SSH_PORT: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
+          MARIST_4_SSH_USER: ${{ secrets.MARIST_4_SSH_USER".toString() }}
+          MARIST_4_SSH_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD".toString() }}
+
+  release:
+      if: github.event_name == 'push' && github.ref_protected
+      needs: test
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+          with:
+            fetch-depth: 0
+            persist-credentials: false
+            ref: ${{ github.ref }}
+
+        - name: Use Node LTS
+          uses: actions/setup-node@v3
+          with:
+            node-version: 'lts/*'
+
+        - name: Install Dependencies
+          run: npm ci
+
+        - name: Build Source
+          run: npm run build
+
+        - name: Release or snapshot
+          run: |
+            if [ "${{matrix.release_type }}" == "snapshot" ];
+            sh '''
+            ./gradlew publish -x test -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
+            '''
+            else
+            sh '''
+            ./gradlew release -x test -Prelease.useAutomaticVersion=true -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
+            '''
+            fi
+          env:
+              ZOWE_USERNAME: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
+              ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
+              ARTIFACTORY_USERNAME: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
+              ARTIFACTORY_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
+
+#        - uses: zowe-actions/octorelease@v1
+#          env:
+#            GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
+#            GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+#            GIT_CREDENTIALS: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
+#            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#            NPM_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+#            NPM_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+#            NPM_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
