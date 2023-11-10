@@ -46,7 +46,7 @@ jobs:
         - name: Build Source
           run: npm run build
 
-        - name: Release or snapshot
+        - uses: octorelease/octorelease@master
           run: |
             if [ "${{matrix.release_type }}" == "snapshot" ];
             sh '''
