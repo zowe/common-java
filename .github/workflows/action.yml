@@ -8,18 +8,14 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         release_type: [release, snapshot]
-
-
     steps:
       - name: Checkout
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-
       - name: Build with Gradle
         run: |
 #          PR_NUMBER=PR-${{ env.PR_NUMBER }}
@@ -39,7 +35,6 @@ jobs:
       if: github.event_name == 'push' && github.ref_protected
       needs: test
       runs-on: ubuntu-latest
-
       steps:
         - name: Checkout
           uses: actions/checkout@v3
