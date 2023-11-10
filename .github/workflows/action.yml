@@ -12,13 +12,13 @@ jobs:
       matrix:
         release_type: [release, snapshot]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: checkout
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Build with Gradle
         run: |
-#          PR_NUMBER=PR-${{ env.PR_NUMBER }}
-#          sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
-#          ./gradlew clean build publishAllVersions -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_USERNAME -PpullRequest=$PR_NUMBER
           sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_4_SSH_HOST} --port ${MARIST_4_SSH_PORT} --user ${MARIST_4_SSH_USER} --password ${MARIST_4_SSH_PASSWORD}"
           sh "zowe profiles create zosmf-profile maristzowe --host ${MARIST_4_SSH_HOST} --port 10443 --user ${MARIST_4_SSH_USER} --pass ${MARIST_4_SSH_PASSWORD} --reject-unauthorized false"
           sh "./gradlew :attls:zosbuild"
