@@ -46,7 +46,7 @@ jobs:
         - name: Build Source
           run: npm run build
 
-        - uses: octorelease/octorelease@master
+        - name: Release or snapshot
           run: |
             if [ "${{matrix.release_type }}" == "snapshot" ];
             sh '''
@@ -57,6 +57,7 @@ jobs:
             ./gradlew release -x test -Prelease.useAutomaticVersion=true -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD
             '''
             fi
+        - uses: octorelease/octorelease@master
           env:
               ZOWE_USERNAME: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
               ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
