@@ -19,8 +19,6 @@ jobs:
         run: npm install -g @zowe/cli@6.32.2
       - name: install zowe-api-dev
         run: npm -g install @zowedev/zowe-api-dev
-      - name: Build Source
-        run: npm run build
 
       - name: Build with Gradle
         run: |
@@ -49,8 +47,6 @@ jobs:
           run: npm install -g @zowe/cli@6.32.2
         - name: install zowe-api-dev
           run: npm -g install @zowedev/zowe-api-dev
-        - name: Build Source
-          run: npm run build
 
         - name: Release or snapshot
           run: |
