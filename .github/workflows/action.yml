@@ -12,11 +12,9 @@ jobs:
       matrix:
         release_type: [release, snapshot]
     steps:
-      - name: checkout
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Build with Gradle
         run: |
           sh "zowe profiles create ssh-profile maristzowe --host ${MARIST_4_SSH_HOST} --port ${MARIST_4_SSH_PORT} --user ${MARIST_4_SSH_USER} --password ${MARIST_4_SSH_PASSWORD}"
