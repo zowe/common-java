@@ -29,7 +29,6 @@ jobs:
 
   release:
       if: github.event_name == 'push' && github.ref_protected
-      needs: test
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
