@@ -13,9 +13,7 @@ jobs:
         release_type: [release, snapshot]
     steps:
       - name: Checkout
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
+        uses: actions/checkout@v3
       - name: Build with Gradle
         run: |
 #          PR_NUMBER=PR-${{ env.PR_NUMBER }}
@@ -38,10 +36,6 @@ jobs:
       steps:
         - name: Checkout
           uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-            persist-credentials: false
-            ref: ${{ github.ref }}
 
         - name: Use Node LTS
           uses: actions/setup-node@v3
