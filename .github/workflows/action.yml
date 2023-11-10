@@ -15,11 +15,10 @@ jobs:
 
 
     steps:
+      - name: Checkout
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-
-      - uses: ./.github/actions/setup
 
       - name: Build with Gradle
         run: |
