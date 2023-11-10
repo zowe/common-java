@@ -22,10 +22,10 @@ jobs:
           sh "./gradlew :attls:zosbuild"
           sh "./gradlew build"
         env:
-          MARIST_4_SSH_HOST: ${{ secrets.MARIST_4_SSH_HOST.toString() }}
-          MARIST_4_SSH_PORT: ${{ secrets.MARIST_4_SSH_PORT.toString() }}
-          MARIST_4_SSH_USER: ${{ secrets.MARIST_4_SSH_USER.toString() }}
-          MARIST_4_SSH_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD.toString() }}
+          MARIST_4_SSH_HOST: ${{ secrets.MARIST_4_SSH_HOST }}
+          MARIST_4_SSH_PORT: ${{ secrets.MARIST_4_SSH_PORT }}
+          MARIST_4_SSH_USER: ${{ secrets.MARIST_4_SSH_USER }}
+          MARIST_4_SSH_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD }}
 
   release:
       if: github.event_name == 'push' && github.ref_protected
@@ -59,10 +59,10 @@ jobs:
             fi
         - uses: octorelease/octorelease@master
           env:
-              ZOWE_USERNAME: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
-              ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
-              ARTIFACTORY_USERNAME: ${{ secrets.MARIST_4_SSH_HOST".toString() }}
-              ARTIFACTORY_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT".toString() }}
+              ZOWE_USERNAME: ${{ secrets.MARIST_4_SSH_HOST }}
+              ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT }}
+              ARTIFACTORY_USERNAME: ${{ secrets.MARIST_4_SSH_USER }}
+              ARTIFACTORY_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD }}
 
 #        - uses: zowe-actions/octorelease@v1
 #          env:
