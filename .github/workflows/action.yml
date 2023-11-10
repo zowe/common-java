@@ -1,6 +1,6 @@
 name: common-java
 
-on: [push, pull_request]
+on: [pull_request]
 
 env:
   PR_NUMBER: ${{ github.event.inputs.pull_request }}
@@ -28,7 +28,7 @@ jobs:
           ./gradlew build
         env:
           MARIST_4_SSH_HOST: ${{ secrets.MARIST_4_SSH_HOST }}.toString()
-          MARIST_4_SSH_PORT: ${{ secrets.MARIST_4_SSH_PORT }}.toString()
+          MARIST_4_SSH_PORT: ${{ secrets.MARIST_4_SSH_PORT }}
           MARIST_4_SSH_USER: ${{ secrets.MARIST_4_SSH_USER }}.toString()
           MARIST_4_SSH_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD }}.toString()
 
@@ -58,7 +58,7 @@ jobs:
         - uses: octorelease/octorelease@master
           env:
               ZOWE_USERNAME: ${{ secrets.MARIST_4_SSH_HOST }}.toString()
-              ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT }}.toString()
+              ZOWE_PASSWORD: ${{ secrets.MARIST_4_SSH_PORT }}
               ARTIFACTORY_USERNAME: ${{ secrets.MARIST_4_SSH_USER }}.toString()
               ARTIFACTORY_PASSWORD: ${{ secrets.MARIST_4_SSH_PASSWORD }}.toString()
 
