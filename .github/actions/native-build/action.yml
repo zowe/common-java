@@ -1,0 +1,30 @@
+name: "Build native libraries"
+description: "Run the build of the libraries on targeted platform."
+
+inputs:
+  host:
+    description: "SSH host"
+    required: true
+  username:
+    description: "SSH username"
+    required: true
+  passwd:
+    description: "SSH password"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: install zowe/cli
+      shell: bash
+      run: npm install -g @zowe/cli@6.40.23
+    - name: install zowe-api-dev
+      shell: bash
+      run: npm -g install @zowedev/zowe-api-dev
+
+    - name: Build with Gradle
+      shell: bash
+      run: |
+        zowe profiles create ssh-profile maristzowe --host ${{ inputs.host }} --port 22 --user ${{ inputs.username }} --password ${{ inputs.passwd }}
+        zowe profiles create zosmf-profile maristzowe --host ${{ inputs.host }} --port 10443 --user ${{ inputs.username }} --pass ${{ inputs.passwd }} --reject-unauthorized false
+        ./gradlew :attls:zosbuild
+        ./gradlew build

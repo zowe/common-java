@@ -1,0 +1,27 @@
+name: Build and publish SNAPSHOT
+
+on:
+  push:
+    branches: [ v2.x.x ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+      - uses: ./.github/actions/native-build
+        with:
+          host: ${{ secrets.SSH_MARIST_RACF_HOST }}
+          username: ${{ secrets.SSH_MARIST_USERNAME }}
+          passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
+
+      - name: Publish snapshot
+        run: |
+          ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          DEFAULT_SCOPE: 'patch'

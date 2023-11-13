@@ -1,0 +1,35 @@
+name: Build and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-scope:
+        description: 'Specify release scope.'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
+      - uses: ./.github/actions/native-build
+        with:
+          host: ${{ secrets.SSH_MARIST_RACF_HOST }}
+          username: ${{ secrets.SSH_MARIST_USERNAME }}
+          passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
+
+      - name: Release new version
+        run: |
+          ./gradlew release -x test -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.release-scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          DEFAULT_SCOPE: 'patch'
