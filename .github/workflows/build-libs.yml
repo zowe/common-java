@@ -16,21 +16,6 @@ jobs:
           username: ${{ secrets.SSH_MARIST_USERNAME }}
           passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
 
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node LTS
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'lts/*'
-      - name: install zowe/cli
-        run: npm install -g @zowe/cli@6.40.23
-      - name: install zowe-api-dev
-        run: npm -g install @zowedev/zowe-api-dev
-
       - name: Release or snapshot
         run: |
           ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
