@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: 'lts/*'
       - name: install zowe/cli
-        run: npm install -g @zowe/cli@6.32.2
+        run: npm install -g @zowe/cli@6.40.23
       - name: install zowe-api-dev
         run: npm -g install @zowedev/zowe-api-dev
 
