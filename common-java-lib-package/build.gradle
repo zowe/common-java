@@ -41,8 +41,8 @@ packageCommonLib.doFirst {
     getCommitHash.waitForOrKill(1000)
 
     // BRANCH_NAME and BUILD_NUMBER are Jenkins variables
-    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("BRANCH_NAME"))
-                       .replaceAll("\\{\\{build.number\\}\\}", System.getenv("BUILD_NUMBER"))
+    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("GITHUB_REF_NAME"))
+                       .replaceAll("\\{\\{build.number\\}\\}", System.getenv("GITHUB_RUN_ID"))
                        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
                        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
 
