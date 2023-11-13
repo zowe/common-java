@@ -15,10 +15,3 @@ jobs:
           host: ${{ secrets.SSH_MARIST_RACF_HOST }}
           username: ${{ secrets.SSH_MARIST_USERNAME }}
           passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
-
-      - name: Release or snapshot
-        run: |
-          ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-        env:
-          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
