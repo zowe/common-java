@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release-scope:
-        description: 'Specify scope that is to be used.'
+        description: 'Specify release scope.'
         required: true
         type: choice
         options:
