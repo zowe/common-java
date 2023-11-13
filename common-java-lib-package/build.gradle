@@ -40,7 +40,7 @@ packageCommonLib.doFirst {
     getCommitHash.consumeProcessOutput(commit_hash, command_err)
     getCommitHash.waitForOrKill(1000)
 
-    // BRANCH_NAME and BUILD_NUMBER are Jenkins variables
+    // GITHUB_REF_NAME and GITHUB_RUN_ID are github actions variables https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
     manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("GITHUB_REF_NAME"))
                        .replaceAll("\\{\\{build.number\\}\\}", System.getenv("GITHUB_RUN_ID"))
                        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
