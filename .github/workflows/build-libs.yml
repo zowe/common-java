@@ -1,0 +1,9 @@
+name: common-java
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/native-build

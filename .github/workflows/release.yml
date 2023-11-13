@@ -1,0 +1,42 @@
+name: Build and release
+
+on:
+  push:
+    branches: [ v2.x.x ]
+  workflow_dispatch:
+    inputs:
+      snapshot_version:
+        description: 'The snapshot version that is going to be published'
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/native-build
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+      - name: install zowe/cli
+        run: npm install -g @zowe/cli@6.32.2
+      - name: install zowe-api-dev
+        run: npm -g install @zowedev/zowe-api-dev
+
+      - name: Release or snapshot
+        run: |
+          if [ ${{github.event.inputs.snapshot_version }} ];
+          ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+          else
+          ./gradlew release -x test -Prelease.useAutomaticVersion=true -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+          fi
+        env:
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
