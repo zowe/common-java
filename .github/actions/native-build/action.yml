@@ -1,6 +1,16 @@
 name: "Build native libraries"
 description: "Run the build of the libraries on targeted platform."
 
+inputs:
+  host:
+    description: "SSH host"
+    required: true
+  username:
+    description: "SSH username"
+    required: true
+  passwd:
+    description: "SSH password"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -14,7 +24,7 @@ runs:
     - name: Build with Gradle
       shell: bash
       run: |
-        zowe profiles create ssh-profile maristzowe --host ${{ secrets.SSH_MARIST_RACF_HOST }} --port 22 --user ${{ secrets.SSH_MARIST_USERNAME }} --password ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
-        zowe profiles create zosmf-profile maristzowe --host ${{ secrets.SSH_MARIST_RACF_HOST }} --port 10443 --user ${{ secrets.SSH_MARIST_USERNAME }} --pass ${{ secrets.SSH_MARIST_RACF_PASSWORD }} --reject-unauthorized false
+        zowe profiles create ssh-profile maristzowe --host ${{ inputs.host }} --port 22 --user ${{ inputs.username }} --password ${{ inputs.passwd }}
+        zowe profiles create zosmf-profile maristzowe --host ${{ inputs.host }} --port 10443 --user ${{ inputs.username }} --pass ${{ inputs.passwd }} --reject-unauthorized false
         ./gradlew :attls:zosbuild
         ./gradlew build
