@@ -28,7 +28,7 @@ jobs:
           ./gradlew build
 
   release:
-      if: github.event_name == 'push' && github.ref_protected
+      if: github.ref.name == 'reboot/ghactions'
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
