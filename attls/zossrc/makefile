@@ -33,7 +33,9 @@ DLL_CPP_FLAGS_31=-W "c,langlvl(extended),dll,xplink,exportall" \
  -g \
  -c
 
-DLL_CPP_FLAGS_64=-W "c,lp64,langlvl(extended),dll,xplink,exportall" \
+DLL_CPP_FLAGS_64=-W "c,lp64,expo,langlvl(extc99),gonum,goff,hgpr,roconst,ASM,asmlib('CEE.SCEEMAC','SYS1.MACLIB','SYS1.MODGEN')" \
+	-Wc,xplink,agg,exp,list,so,off,xref \
+	-Wl,lp64,ac=1 \
   $(ZOS_BUILD_INFO) \
  -qsearch=$(JAVA_HOME_64)/include \
  -qsource \
@@ -56,8 +58,9 @@ PREFIX := "../lib/"
 
 LIB_ATTLS_31 = "libzowe-attls-31.so"
 LIB_ATTLS_64 = "libzowe-attls.so"
+LIB_USERMAP_64 = "libzowe-usermap.so"
 
-all: $(LIB_ATTLS_31) $(LIB_ATTLS_64)
+all: $(LIB_USERMAP_64) $(LIB_ATTLS_31) $(LIB_ATTLS_64)
 
 install:
 	mkdir -p $(PREFIX)
@@ -78,6 +81,22 @@ attls_31.o: AttlsContext.c
 attls_64.o: AttlsContext.c
 	$(CC) $(DLL_CPP_FLAGS_64) -qlist=$*.cpp.lst -o $@ $^
 
+
+$(LIB_USERMAP_64): javaUsermap.o xlate.o alloc.o rusermap.o
+	$(CXX) $(DLL_BND_FLAGS_64) -o $@ $(SIDEDECKPATH_64)/$(SIDEDECK).x $^ > $*.bind_64.lst
+	extattr +p $@
+
+javaUsermap.o: javaUsermap.c
+	$(CC) $(DLL_CPP_FLAGS_64) -qlist=$*.cpp.lst -I ./zowe-common-c/h -o $@ $^
+
+rusermap.o: ./zowe-common-c/c/rusermap.c
+	$(CC) $(DLL_CPP_FLAGS_64) -qlist=$*.cpp.lst -I ./zowe-common-c/h -o $@ $^
+
+xlate.o: ./zowe-common-c/c/xlate.c
+	$(CC) $(DLL_CPP_FLAGS_64) -qlist=$*.cpp.lst -I ./zowe-common-c/h -o $@ $^
+
+alloc.o: ./zowe-common-c/c/alloc.c
+	$(CC) $(DLL_CPP_FLAGS_64) -qlist=$*.cpp.lst -I ./zowe-common-c/h -o $@ $^
 clean:
 	rm *.o
 	rm *.lst
