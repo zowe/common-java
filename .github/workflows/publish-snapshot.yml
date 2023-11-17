@@ -17,6 +17,7 @@ jobs:
           host: ${{ secrets.SSH_MARIST_RACF_HOST }}
           username: ${{ secrets.SSH_MARIST_USERNAME }}
           passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
+          port: ${{ secrets.SSH_MARIST_ALLSYS_PORT }}
 
       - name: Publish snapshot
         run: |
