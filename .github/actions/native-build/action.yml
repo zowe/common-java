@@ -11,6 +11,9 @@ inputs:
   passwd:
     description: "SSH password"
     required: true
+  port:
+    description: "SSH Port"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -24,7 +27,7 @@ runs:
     - name: Build with Gradle
       shell: bash
       run: |
-        zowe profiles create ssh-profile maristzowe --host ${{ inputs.host }} --port 22 --user ${{ inputs.username }} --password ${{ inputs.passwd }}
+        zowe profiles create ssh-profile maristzowe --host ${{ inputs.host }} --port ${{ inputs.port }} --user ${{ inputs.username }} --password ${{ inputs.passwd }}
         zowe profiles create zosmf-profile maristzowe --host ${{ inputs.host }} --port 10443 --user ${{ inputs.username }} --pass ${{ inputs.passwd }} --reject-unauthorized false
         ./gradlew :attls:zosbuild
         ./gradlew build
