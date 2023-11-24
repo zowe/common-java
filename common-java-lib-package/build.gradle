@@ -27,7 +27,7 @@ task packageCommonLib(type: Zip) {
 
     into('bin/') {
         from "${project.rootDir}/attls/$resourceDir/lib/libzowe-attls.so"
-        from "$resourceDir/bin/configure.sh"
+        from "$resourceDir/bin/install.sh"
     }
 }
 
