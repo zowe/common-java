@@ -10,8 +10,6 @@ ext {
     sharedObjectFilePath2 = 'src/main/resources/lib/libzowe-attls-31.so'
 }
 
-
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -40,7 +38,6 @@ jar {
                 'Implementation-Version': project.version)
     }
 }
-
 
 test {
     useJUnitPlatform()
@@ -111,7 +108,6 @@ task wrapper(){
 task prepareKotlinBuildScriptModel(){
 
 }
-
 
 publishing {
     publications {
