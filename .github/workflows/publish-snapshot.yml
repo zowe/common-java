@@ -1,6 +1,7 @@
 name: Build and publish SNAPSHOT
 
-on: [pull_request]
+on:
+    workflow_dispatch:
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
