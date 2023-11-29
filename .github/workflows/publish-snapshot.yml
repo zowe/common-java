@@ -1,8 +1,9 @@
 name: Build and publish SNAPSHOT
 
-on:
-    pull_request:
-        branches: [ v2.x.x ]
+on: [pull_request]
+
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
   build:
@@ -21,8 +22,9 @@ jobs:
 
       - name: Publish snapshot
         run: |
-          PR_NUMBER=PR-1000
+          PR_NUMBER=PR-${{ env.JOB_ID }}
           sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
+          cat ./gradle.properties
           ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
