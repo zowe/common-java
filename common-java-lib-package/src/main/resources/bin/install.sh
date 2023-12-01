@@ -10,5 +10,5 @@
 # Copyright IBM Corporation 2019, 2020
 ################################################################################
 
-chmod a+x bin/libzowe-attls.so
-extattr +p bin/libzowe-attls.so
+chmod a+x bin/libzowe-attls.so bin/libzowe-usermap.so
+extattr +p bin/libzowe-attls.so bin/libzowe-usermap.so
