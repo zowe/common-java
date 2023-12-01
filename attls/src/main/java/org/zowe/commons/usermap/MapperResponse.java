@@ -25,6 +25,26 @@ public class MapperResponse {
         this.racfRs = racfRs;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public int getRc() {
+        return rc;
+    }
+
+    public int getSafRc() {
+        return safRc;
+    }
+
+    public int getRacfRc() {
+        return racfRc;
+    }
+
+    public int getRacfRs() {
+        return racfRs;
+    }
+
     @Override
     public String toString() {
         return "MapperResponse{" +

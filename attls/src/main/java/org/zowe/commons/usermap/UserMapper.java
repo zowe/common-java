@@ -9,22 +9,15 @@
  */
 
 package org.zowe.commons.usermap;
-import java.io.File;
-import java.io.FileInputStream;
-public class UserMapper {
-    public static void main(String[] args) throws Exception {
-        System.loadLibrary("zowe-usermap");
-        System.out.println(args[0]);
-        File file = new File(args[0]);
 
-        FileInputStream fis = new FileInputStream(file);
-        byte[]cert = new byte[(int)file.length()];
-        fis.read(cert);
-        UserMapper mapper = new UserMapper();
-        MapperResponse certUser = mapper.getUserIDForCertificate(cert);
-        System.out.println("cert user:" + certUser);
-        MapperResponse us = mapper.getUserIDForDN(args[1],"broadcom.okta.com");
-        System.out.println("distributed user:" +us);
+public class UserMapper {
+
+    public static final String USERMAP_LIBRARY_NAME = "zowe-usermap";
+
+    static {
+        if ("z/os".equalsIgnoreCase(System.getProperty("os.name"))) {
+            System.loadLibrary(USERMAP_LIBRARY_NAME);
+        }
     }
     public native MapperResponse getUserIDForCertificate(byte[] certificate);
     public native MapperResponse getUserIDForDN(String distinguishedName, String registry);
