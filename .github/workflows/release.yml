@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          submodules: true
           ref: ${{ github.head_ref }}
           token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
       - uses: ./.github/actions/native-build
