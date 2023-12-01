@@ -11,8 +11,6 @@ ext {
     sharedObjectFilePathUsermap = 'src/main/resources/lib/libzowe-usermap.so'
 }
 
-
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -41,7 +39,6 @@ jar {
                 'Implementation-Version': project.version)
     }
 }
-
 
 test {
     useJUnitPlatform()
@@ -165,7 +162,6 @@ task wrapper(){
 task prepareKotlinBuildScriptModel(){
 
 }
-
 
 publishing {
     publications {
