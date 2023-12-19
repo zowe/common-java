@@ -17,7 +17,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.zowe.apiml.sdk:zowe_zos-utils:<replace with desired version>'
+    implementation 'org.zowe.apiml.sdk:zos-utils:<replace with desired version>'
 }
 ```
 
