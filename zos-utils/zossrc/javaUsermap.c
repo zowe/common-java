@@ -8,6 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+#define _OPEN_SYS
+#include <unistd.h>
+#include <errno.h>
 #include "zowe-common-c/h/rusermap.h"
 #include "javaUsermap.h"
 #include <stdio.h>
@@ -16,14 +19,13 @@
 #pragma convert(819)
 const char *JNI_CLASS_ILLEGAL_ARGUMENT_EXCEPTION = "java/lang/IllegalArgumentException";
 
-const char *JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID = "(Ljava/lang/String;IIII)V";
+const char *JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_INT_VOID = "(Ljava/lang/String;IIII)V";
+const char *JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID = "(Ljava/lang/String;III)V";
 const char *JNI_METHOD_CONSTRUCTOR = "<init>";
 
 const char *JNI_CLASS_MAPPER_RESPONSE = "org/zowe/commons/usermap/MapperResponse";
+const char *JNI_CLASS_CERTIFICATE_RESPONSE = "org/zowe/commons/usermap/CertificateResponse";
 
-/**
- * error messages in ASCII
- */
 const char *JNI_MESSAGE_CANNOT_CONVERT_USER_ID = "Cannot convert userID";
 #pragma convert(0)
 
@@ -64,32 +66,28 @@ jstring get_jstring(JNIEnv *env, char* ebcdic, int length)
 
 JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForCertificate(JNIEnv *env, jobject obj, jbyteArray certificate) {
 
-
     jbyte* cCertificate = (*env)->GetByteArrayElements(env, certificate, NULL);
     int certificateLength = (*env)->GetArrayLength(env,certificate);
     char useridRacf[9] = {0};
+    int userId_length = 9;
     int returnCodeRacf = 0;
     int reasonCodeRacf = 0;
-    printf("\nReturn code %d",returnCodeRacf);
-    printf("\nReason code %d",reasonCodeRacf);
-    int rc = getUseridByCertificate((char*)cCertificate, certificateLength, useridRacf, &returnCodeRacf, &reasonCodeRacf);
+
+    int rc = __certificate(__CERTIFICATE_AUTHENTICATE, certificateLength, (char*)cCertificate,userId_length,useridRacf);
     (*env)->ReleaseByteArrayElements(env, certificate, cCertificate, 0);
-    printf("\nReturn code %d",returnCodeRacf);
-    printf("\nReason code %d",reasonCodeRacf);
-    printf("\nuserid: %s \n",useridRacf);
 
     if ((*env) -> ExceptionCheck(env)) {
       return NULL;
     }
-
     e2a(useridRacf,9);
 
-    jclass mapperClass = (*env)->FindClass(env,JNI_CLASS_MAPPER_RESPONSE);
+    jclass certificateClass = (*env)->FindClass(env,JNI_CLASS_CERTIFICATE_RESPONSE);
 
-    jmethodID cid = (*env)->GetMethodID(env,mapperClass,JNI_METHOD_CONSTRUCTOR,JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID);
+    jmethodID cid = (*env)->GetMethodID(env,certificateClass,JNI_METHOD_CONSTRUCTOR,JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID);
 
     jstring jUseridRacf = (*env)->NewStringUTF(env,useridRacf);
-    return (*env)->NewObject(env,mapperClass,cid,jUseridRacf,rc,returnCodeRacf,returnCodeRacf,reasonCodeRacf);
+
+    return (*env)->NewObject(env,certificateClass,cid,jUseridRacf,rc,errno,__errno2());
 }
 
 JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForDN(JNIEnv *env, jobject obj, jstring dn, jstring reg){
@@ -107,19 +105,14 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForD
     char useridRacf[9] = {0};
     int returnCodeRacf = 0;
     int reasonCodeRacf = 0;
-    printf("\nEBCIDIC dn: %s",distinguishedName);
-    printf("\nEBCIDIC registry: %s",registryEbcidic);
-    printf("\nReturn code DN %d",returnCodeRacf);
-    printf("\nReason code DN %d",reasonCodeRacf);
+
     int rc = getUseridByDN(distinguishedName,dnLength,registryEbcidic,registryLength,useridRacf,&returnCodeRacf,&reasonCodeRacf);
-    printf("\nReturn code DN %d",returnCodeRacf);
-    printf("\nReason code DN %d",reasonCodeRacf);
-    printf("\nuserid for DN: %s \n",useridRacf);
+
     e2a(useridRacf,9);
 
     jclass mapperClass = (*env)->FindClass(env,JNI_CLASS_MAPPER_RESPONSE);
 
-    jmethodID cid = (*env)->GetMethodID(env,mapperClass,JNI_METHOD_CONSTRUCTOR,JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID);
+    jmethodID cid = (*env)->GetMethodID(env,mapperClass,JNI_METHOD_CONSTRUCTOR,JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_INT_VOID);
 
     jstring jUseridRacf = (*env)->NewStringUTF(env,useridRacf);
 

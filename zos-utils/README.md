@@ -5,9 +5,9 @@ SPDX-License-Identifier: EPL-2.0
 ## Library AT-TLS
 
 
-Java library providing native calls about AT-TLS. 
+Java library providing native calls to z/OS. 
 
-This library can be imported in the Java project without Spring, which realizes secure communication via AT-TLS. 
+This library can be imported in the Java project without Spring. 
 
 ## Using the Library
 
@@ -17,7 +17,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.zowe:zowe-attls:<replace with desired version>'
+    implementation 'org.zowe.apiml.sdk:zowe_zos-utils:<replace with desired version>'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 
 The base part of library is native code. At first, you should handle it:
 
- 1. Extract SO library. SO file is located in JAR file at `lib/libzowe-attls.so` for 64-bit Java, or `lib/libzowe-attls-31.so` for 31-bit Java.
+ 1. Extract SO library. SO file is located in JAR file at `lib/libzowe-attls.so` and `lib/libzowe-usermap.so` for 64-bit Java, or `lib/libzowe-attls-31.so` for 31-bit Java.
 
  2. Copy SO library to USS and set attributes of file:
 

@@ -26,8 +26,8 @@ task packageCommonLib(type: Zip) {
     }
 
     into('bin/') {
-        from "${project.rootDir}/attls/$resourceDir/lib/libzowe-attls.so"
-        from "${project.rootDir}/attls/$resourceDir/lib/libzowe-usermap.so"
+        from "${project.rootDir}/zos-utils/$resourceDir/lib/libzowe-attls.so"
+        from "${project.rootDir}/zos-utils/$resourceDir/lib/libzowe-usermap.so"
         from "$resourceDir/bin/install.sh"
     }
 }

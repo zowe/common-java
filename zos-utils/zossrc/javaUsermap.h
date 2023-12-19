@@ -20,7 +20,7 @@ extern "C" {
 /*
  * Class:     org_zowe_commons_usermap_UserMapper
  * Method:    getUserIDForCertificate
- * Signature: ([B)Lorg/zowe/commons/usermap/MapperResponse;
+ * Signature: ([B)Lorg/zowe/commons/usermap/CertificateResponse;
  */
 JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForCertificate
   (JNIEnv *, jobject, jbyteArray);

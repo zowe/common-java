@@ -29,5 +29,5 @@ runs:
       run: |
         zowe profiles create ssh-profile maristzowe --host ${{ inputs.host }} --port ${{ inputs.port }} --user ${{ inputs.username }} --password ${{ inputs.passwd }}
         zowe profiles create zosmf-profile maristzowe --host ${{ inputs.host }} --port 10443 --user ${{ inputs.username }} --pass ${{ inputs.passwd }} --reject-unauthorized false
-        ./gradlew :attls:zosbuild
+        ./gradlew :zos-utils:zosbuild
         ./gradlew build

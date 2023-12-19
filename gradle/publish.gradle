@@ -1,6 +1,6 @@
 
 ext.javaLibraries = [
-        'attls',
+        'zos-utils',
         'common-java-lib-package'
 ]
 

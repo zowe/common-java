@@ -19,6 +19,6 @@ public class UserMapper {
             System.loadLibrary(USERMAP_LIBRARY_NAME);
         }
     }
-    public native MapperResponse getUserIDForCertificate(byte[] certificate);
+    public native CertificateResponse getUserIDForCertificate(byte[] certificate);
     public native MapperResponse getUserIDForDN(String distinguishedName, String registry);
 }

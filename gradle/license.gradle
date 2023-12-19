@@ -1,5 +1,5 @@
 ext.projectsNeedLicense = [
-    'attls'
+    'zos-utils'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {
