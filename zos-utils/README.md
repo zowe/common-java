@@ -37,7 +37,7 @@ The base part of library is native code. At first, you should handle it:
 
  3. Include the directory into the library path, see Java attribute `-Djava.library.path=<path to folder with SO libraries>`
 
-## How to use library
+## How to use AT-TLS library
 
 The library provides IOCTL calls. Those calls support:
  - getting information about AT-TLS session (Aware mode)
