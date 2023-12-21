@@ -8,6 +8,7 @@ plugins {
 ext {
     sharedObjectFilePath = 'src/main/resources/lib/libzowe-attls.so'
     sharedObjectFilePath2 = 'src/main/resources/lib/libzowe-attls-31.so'
+    sharedObjectFilePathUsermap = 'src/main/resources/lib/libzowe-usermap.so'
 }
 
 configurations {
@@ -78,10 +79,59 @@ task zosbuild(type: Exec) {
     outputs.cacheIf { true }
     outputs.file(sharedObjectFilePath)
     outputs.file(sharedObjectFilePath2)
+    outputs.file(sharedObjectFilePathUsermap)
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
         commandLine 'zowe-api-dev.cmd', 'zosbuild'
     } else {
         commandLine 'npx', 'zowe-api-dev', 'zosbuild'
+    }
+
+    doFirst {
+        copy {
+            from "../zowe-common-c/c/rusermap.c"
+            into "zossrc/zowe-common-c/c"
+        }
+        copy {
+            from "../zowe-common-c/c/xlate.c"
+            into "zossrc/zowe-common-c/c"
+        }
+        copy {
+            from "../zowe-common-c/c/alloc.c"
+            into "zossrc/zowe-common-c/c"
+        }
+        copy {
+            from "../zowe-common-c/h/alloc.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/h/copyright.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/h/utils.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/c/xlate_tables.c"
+            into "zossrc/zowe-common-c/c"
+        }
+        copy {
+            from "../zowe-common-c/h/rusermap.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/h/xlate.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/h/rusermap.h"
+            into "zossrc/zowe-common-c/h"
+        }
+        copy {
+            from "../zowe-common-c/h/zowetypes.h"
+            into "zossrc/zowe-common-c/h"
+        }
+
     }
 }
 
@@ -95,6 +145,10 @@ task checkSharedObject {
         def f2 = new File(projectDir, sharedObjectFilePath2)
         if (!f2.exists()) {
             throw new GradleException("Shared object $sharedObjectFilePath2 is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
+        }
+        def f3 = new File(projectDir, sharedObjectFilePathUsermap)
+        if (!f3.exists()) {
+            throw new GradleException("Shared object $sharedObjectFilePathUsermap is missing. Run `./gradlew zosbuild` in directory $projectDir to build it yourself")
         }
     }
 }
