@@ -62,13 +62,22 @@ JNIEnv* getEnv(JavaVM *vm) {
  jint JNI_OnLoad(JavaVM *vm, void *reserved) {
      JNIEnv* env = getEnv(vm);
      if (env == NULL) return JNI_ERR;
+
      certificateClass = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_CERTIFICATE_RESPONSE));
+     if (certificateClass == NULL) return JNI_ERR;
+
      certificateClassCtor = (*env) -> GetMethodID(env, certificateClass, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_VOID);
+     if (certificateClassCtor == NULL) return JNI_ERR;
+
      mapperClass = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_MAPPER_RESPONSE));
+    if (mapperClass == NULL) return JNI_ERR;
 
      mapperClassCtor = (*env) -> GetMethodID(env, mapperClass, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_STRING_INT_INT_INT_INT_VOID);
+    if (mapperClassCtor == NULL) return JNI_ERR;
 
      exception_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_ILLEGAL_ARGUMENT_EXCEPTION));
+     if (exception_clazz == NULL) return JNI_ERR;
+
      return JNI_VERSION;
  }
 /**
@@ -121,8 +130,8 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForD
     const char* distName = (*env) -> GetStringUTFChars(env, dn, NULL);
     int dnLength = (*env) -> GetStringUTFLength(env, dn);
     if(dnLength > 246) {
-            (*env) -> ThrowNew(env, exception_clazz, JNI_MESSAGE_DN_NAME_TOO_LONG);
-            return NULL;
+        (*env) -> ThrowNew(env, exception_clazz, JNI_MESSAGE_DN_NAME_TOO_LONG);
+        return NULL;
     }
     char distinguishedName[246] = {0};
     memcpy(distinguishedName, distName, dnLength);
@@ -132,8 +141,8 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForD
     const char* registry = (*env)->GetStringUTFChars(env, reg, NULL);
     int registryLength = (*env)->GetStringUTFLength(env, reg);
     if(registryLength > 255) {
-            (*env) -> ThrowNew(env, exception_clazz, JNI_MESSAGE_REGISTRY_NAME_TOO_LONG);
-            return NULL;
+        (*env) -> ThrowNew(env, exception_clazz, JNI_MESSAGE_REGISTRY_NAME_TOO_LONG);
+        return NULL;
     }
     char registryEbcidic[255] = {0};
     memcpy(registryEbcidic, registry, registryLength);

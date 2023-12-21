@@ -10,49 +10,13 @@
 
 package org.zowe.commons.usermap;
 
+import lombok.Value;
+
+@Value
 public class MapperResponse {
-    private String userId;
-    private int rc;
-    private int safRc;
-    private int racfRc;
-    private int racfRs;
-
-    public MapperResponse(String userId, int rc, int safRc, int racfRc, int racfRs) {
-        this.userId = userId;
-        this.rc = rc;
-        this.safRc = safRc;
-        this.racfRc = racfRc;
-        this.racfRs = racfRs;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public int getRc() {
-        return rc;
-    }
-
-    public int getSafRc() {
-        return safRc;
-    }
-
-    public int getRacfRc() {
-        return racfRc;
-    }
-
-    public int getRacfRs() {
-        return racfRs;
-    }
-
-    @Override
-    public String toString() {
-        return "MapperResponse{" +
-                "userId='" + userId + '\'' +
-                ", rc=" + rc +
-                ", safRc=" + safRc +
-                ", racfRc=" + racfRc +
-                ", racfRs=" + racfRs +
-                '}';
-    }
+    String userId;
+    int rc;
+    int safRc;
+    int racfRc;
+    int racfRs;
 }
