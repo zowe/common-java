@@ -2,6 +2,11 @@ name: Build and publish SNAPSHOT
 
 on:
     workflow_dispatch:
+      inputs:
+        snapshot-prefix:
+          description: 'Publish SNAPSHOT version with unique prefix.'
+          type: boolean
+          default: false
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
@@ -22,11 +27,14 @@ jobs:
           passwd: ${{ secrets.SSH_MARIST_RACF_PASSWORD }}
           port: ${{ secrets.SSH_MARIST_ALLSYS_PORT }}
 
-      - name: Publish snapshot
+      - name: Add prefix to SNAPSHOT version.
+        if: ${{ inputs.snapshot-prefix == 'true' }}
         run: |
           PR_NUMBER=PR-${{ env.JOB_ID }}
           sed -i '/version=/ s/-SNAPSHOT/-'"$PR_NUMBER"'-SNAPSHOT/' ./gradle.properties
           cat ./gradle.properties
+      - name: Publish snapshot
+        run: |
           ./gradlew publish -x test -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
         env:
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
