@@ -45,7 +45,7 @@ public class AttlsContext {
     /**
      * Control flag to identify if certificate should be fetch in each query call or not
      */
-    private boolean alwaysLoadCertificate;
+    private final boolean alwaysLoadCertificate;
 
     /**
      * FileDescriptior of socket
