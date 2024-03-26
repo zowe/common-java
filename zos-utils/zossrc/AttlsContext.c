@@ -422,7 +422,7 @@ void cleanByteArray(JNIEnv *env, jobject obj, jfieldID arrayField, jboolean setN
  * certificate - if true method will allocate also buffer for reading certificate
  * erase - if true the buffers will be empty - before a new call is a good practice to cleanup buffers
  */
-Context *getContext(JNIEnv *env, jobject obj, jboolean certificate, jboolean erase)
+Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean erase)
 {
     Context *c = (Context*) malloc(sizeof(Context));
 
@@ -448,11 +448,11 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean certificate, jboolean era
     }
 
     // obtain certificate buffer or create new one if needed
-    if (!certificate) {
-        certificate = (*env) -> GetBooleanField(env, obj, always_load_certificate_field);
+    c -> load_certificate = loadCertificate;
+    if (!loadCertificate) {
+        c -> load_certificate = (*env) -> GetBooleanField(env, obj, always_load_certificate_field);
     }
-    c -> load_certificate = certificate;
-    if (certificate) {
+    if (c -> load_certificate) {
         jbyteArray certArray = (*env) -> GetObjectField(env, obj, buffer_certificate_field);
         if (!certArray) {
             certArray = (*env) -> NewByteArray(env, buffer_certificate_size);
@@ -498,7 +498,7 @@ void releaseContext(JNIEnv *env, Context *c)
 
 /**
  * It call ioctl to fetch query or certificate. Query call is done always, the certificate is loaded just if argument
- * certificate is set to true or alwaysLoadCertificate false is set to true.
+ * certificate is set to true or alwaysLoadCertificate is set to true.
  * In case of an error during fetching data IoctlCallException is thrown.
  */
 Context* query(JNIEnv *env, jobject obj, jboolean certificate)
