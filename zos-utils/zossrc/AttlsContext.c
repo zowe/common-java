@@ -121,9 +121,9 @@ const char *JNI_SIGNATURE_METHOD_BYTE_ARRAY_BYTE_VOID = "([BB)V";
 #define JNI_VERSION JNI_VERSION_1_8
 
 /**
-  * Struct for fast mapping byte values into enumeration. It is possible to use to value which are close to zero.
-  * It prepare array and mapping is via index of arrray.
-  */
+ * Struct for fast mapping byte values into enumeration. It is possible to use to value which are close to zero.
+ * It prepare array and mapping is via index of arrray.
+ */
 typedef struct enum_map {
     // enumeration Class
     jclass clazz;
@@ -135,6 +135,9 @@ typedef struct enum_map {
     int max_value;
 } EnumMap;
 
+/**
+ * The DTO collecting basic references about buffers and control values.
+ */
 typedef struct context {
     jint socket_id;
 
@@ -395,10 +398,35 @@ jboolean isCertificateLoaded(JNIEnv *env, jobject obj)
     return (*env) -> GetBooleanField(env, obj, certificate_loaded_field);
 }
 
+/**
+ * Methods clean up the byte array in AttlsContext if exists
+ */
+void cleanByteArray(JNIEnv *env, jobject obj, jfieldID arrayField, jboolean setNull)
+{
+    jbyteArray arr = (*env) -> GetObjectField(env, obj, arrayField);
+    if (arr) {
+        (*env) -> CallStaticVoidMethod(env, arraysClass, arrays_fill_method_ID, arr, (jbyte) 0);
+        if (setNull) {
+            (*env) -> SetObjectField(env, obj, arrayField, NULL);
+        }
+        (*env) -> DeleteLocalRef(env, arr);
+    }
+}
+
+/**
+ * The method read buffers from AttlsContext. If any is not created, it create a new one. The method returns DTO Context
+ * that contains all related pointers. It is necessary to call method releaseContext before leaving the JNI code.
+ *
+ * env - JNI environment (from the original JNI call)
+ * obj - instance of AttlsContext (from the original JNI call)
+ * certificate - if true method will allocate also buffer for reading certificate
+ * erase - if true the buffers will be empty - before a new call is a good practice to cleanup buffers
+ */
 Context *getContext(JNIEnv *env, jobject obj, jboolean certificate, jboolean erase)
 {
     Context *c = (Context*) malloc(sizeof(Context));
 
+    // flags to indicate if created buffers are already empty (see new array created by Java) - to reduce memset calls
     jboolean emptyIoctlArray = JNI_FALSE;
     jboolean emptyCertificateArray = JNI_FALSE;
 
@@ -442,11 +470,19 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean certificate, jboolean era
         c -> certificate_array = NULL;
         c -> certificate_buffer = NULL;
         c -> certificate_buffer_length = 0;
+
+        if (erase) {
+            // current call does not require certificate buffer, but it maybe exists. Clean up it for a next call
+            cleanByteArray(env, obj, buffer_certificate_field, JNI_FALSE);
+        }
     }
 
     return c;
 }
 
+/**
+ * Methods to release native buffers, local references and DTO Context
+ */
 void releaseContext(JNIEnv *env, Context *c)
 {
     (*env) -> ReleaseByteArrayElements(env, c -> ioctl_array, (jbyte*) c -> ioctl_buffer, 0);
@@ -461,10 +497,11 @@ void releaseContext(JNIEnv *env, Context *c)
 }
 
 /**
- * It call ioctl to fetch query or certificate. Type of call is determinated by arguments query and certificate.
- * Also in the case alwaysLoadCertificate is set to true certificated is fetched.
+ * It call ioctl to fetch query or certificate. Query call is done always, the certificate is loaded just if argument
+ * certificate is set to true or alwaysLoadCertificate false is set to true.
+ * In case of an error during fetching data IoctlCallException is thrown.
  */
-Context* load(JNIEnv *env, jobject obj, jboolean certificate)
+Context* query(JNIEnv *env, jobject obj, jboolean certificate)
 {
     // get struct of request
     struct context* c = getContext(env, obj, certificate, JNI_TRUE);
@@ -483,14 +520,15 @@ Context* load(JNIEnv *env, jobject obj, jboolean certificate)
     // call ioctl
     int rcIoctl = ioctl(c -> socket_id, SIOCTTLSCTL, c -> ioctl_buffer);
 
-    // if ioctl returns an error throw exception
     if (rcIoctl < 0) {
+        // if ioctl returns an error throw exception
         jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_IOCTL_CALL_EXCEPTION);
         jmethodID constructor = (*env) -> GetMethodID(env, exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_INT_INT_INT_VOID);
         jobject exception = (*env) -> NewObject(env, exception_clazz, constructor,
             (jint) rcIoctl, (jint) errno, (jint) __errno2());
         (*env) -> Throw(env, exception);
     } else {
+        // update fields queryLoaded and certificateLoaded to avoid unnecessary call of IOCTL next time
         (*env) -> SetBooleanField(env, obj, query_loaded_field, JNI_TRUE);
         if (c -> load_certificate) {
             (*env) -> SetBooleanField(env, obj, certificate_loaded_field, JNI_TRUE);
@@ -506,8 +544,13 @@ Context* load(JNIEnv *env, jobject obj, jboolean certificate)
  */
 Context* requireQuery(JNIEnv *env, jobject obj)
 {
-    if (isQueryLoaded(env, obj)) return getContext(env,obj, JNI_FALSE, JNI_FALSE);
-    return load(env, obj, JNI_FALSE);
+    if (isQueryLoaded(env, obj)) {
+        // query was done, just read the buffers
+        return getContext(env,obj, JNI_FALSE, JNI_FALSE);
+    }
+
+    // issue a new query with erased buffers
+    return query(env, obj, JNI_FALSE);
 }
 
 /**
@@ -515,18 +558,13 @@ Context* requireQuery(JNIEnv *env, jobject obj)
  */
 Context* requireCertificate(JNIEnv *env, jobject obj)
 {
-    if (isCertificateLoaded(env, obj)) return getContext(env, obj, JNI_TRUE, JNI_FALSE);
-    return load(env, obj, JNI_TRUE);
-}
-
-void cleanByteArray(JNIEnv *env, jobject obj, jfieldID arrayField)
-{
-    jbyteArray arr = (*env) -> GetObjectField(env, obj, arrayField);
-    if (arr) {
-        (*env) -> CallStaticVoidMethod(env, arraysClass, arrays_fill_method_ID, arr, (jbyte) 0);
-        (*env) -> SetObjectField(env, obj, arrayField, NULL);
-        (*env) -> DeleteLocalRef(env, arr);
+    if (isCertificateLoaded(env, obj)) {
+        // query with certificate was done, just read the buffers
+        return getContext(env, obj, JNI_TRUE, JNI_FALSE);
     }
+
+    // issue a new query with erased buffers
+    return query(env, obj, JNI_TRUE);
 }
 
 /**
@@ -539,11 +577,11 @@ JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_clean(JNIEnv *en
     (*env) -> SetBooleanField(env, obj, certificate_loaded_field, JNI_FALSE);
 
     // clean all bytearrays
-    cleanByteArray(env, obj, ioctl_field);
-    cleanByteArray(env, obj, buffer_certificate_field);
-    cleanByteArray(env, obj, certificate_cache_field);
+    cleanByteArray(env, obj, ioctl_field, JNI_TRUE);
+    cleanByteArray(env, obj, buffer_certificate_field, JNI_TRUE);
+    cleanByteArray(env, obj, certificate_cache_field, JNI_TRUE);
 
-    // clean all cached values (Java objects)
+    // clean all (non-array) cached values (Java objects)
     (*env) -> SetObjectField(env, obj, stat_policy_cache_field, NULL);
     (*env) -> SetObjectField(env, obj, stat_conn_cache_field, NULL);
     (*env) -> SetObjectField(env, obj, protocol_cache_field, NULL);
@@ -761,6 +799,8 @@ JNIEXPORT jbyteArray JNICALL Java_org_zowe_commons_attls_AttlsContext_getCertifi
 void issueCommand(JNIEnv *env, jobject obj, int command)
 {
     Context* c = getContext(env, obj, JNI_FALSE, JNI_TRUE);
+
+    // previous fetched data about state and certificate were forgotten. They could be also change because of the command
     (*env) -> SetBooleanField(env, obj, query_loaded_field, JNI_FALSE);
     (*env) -> SetBooleanField(env, obj, certificate_loaded_field, JNI_FALSE);
 
@@ -812,8 +852,7 @@ JNIEXPORT void JNICALL Java_org_zowe_commons_attls_AttlsContext_allowHandShakeTi
  */
 void free_enum_map(JNIEnv* env, EnumMap* enum_map)
 {
-    for (int i = 0; i < enum_map -> max_value; i++)
-    {
+    for (int i = 0; i < enum_map -> max_value; i++) {
         if (!enum_map -> values[i]) continue;
         (*env) -> DeleteGlobalRef(env, enum_map -> values[i]);
     }
