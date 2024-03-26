@@ -395,9 +395,12 @@ jboolean isCertificateLoaded(JNIEnv *env, jobject obj)
     return (*env) -> GetBooleanField(env, obj, certificate_loaded_field);
 }
 
-Context *getContext(JNIEnv *env, jobject obj, jboolean certificate)
+Context *getContext(JNIEnv *env, jobject obj, jboolean certificate, jboolean erase)
 {
     Context *c = (Context*) malloc(sizeof(Context));
+
+    jboolean emptyIoctlArray = JNI_FALSE;
+    jboolean emptyCertificateArray = JNI_FALSE;
 
     // obtain socket ID from AttlsContext class
     c -> socket_id = (*env) -> GetIntField(env, obj, id_field);
@@ -407,9 +410,14 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean certificate)
     if (!ioctlArray) {
         ioctlArray = (*env) -> NewByteArray(env, sizeof(struct TTLS_IOCTL));
         (*env) -> SetObjectField(env, obj, ioctl_field, ioctlArray);
+        emptyIoctlArray = JNI_TRUE;
     }
     c -> ioctl_array = ioctlArray;
     c -> ioctl_buffer = (struct TTLS_IOCTL*) (*env) -> GetByteArrayElements(env, ioctlArray, 0);
+
+    if (erase && !emptyIoctlArray) {
+        memset(c -> ioctl_buffer, 0, sizeof(struct TTLS_IOCTL));
+    }
 
     // obtain certificate buffer or create new one if needed
     if (!certificate) {
@@ -421,10 +429,15 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean certificate)
         if (!certArray) {
             certArray = (*env) -> NewByteArray(env, buffer_certificate_size);
             (*env) -> SetObjectField(env, obj, buffer_certificate_field, certArray);
+            emptyCertificateArray = JNI_TRUE;
         }
         c -> certificate_array = certArray;
         c -> certificate_buffer = (*env) -> GetByteArrayElements(env, certArray, 0);
         c -> certificate_buffer_length = buffer_certificate_size;
+
+        if (erase && !emptyCertificateArray) {
+            memset(c -> certificate_buffer, 0, buffer_certificate_size);
+        }
     } else {
         c -> certificate_array = NULL;
         c -> certificate_buffer = NULL;
@@ -454,7 +467,7 @@ void releaseContext(JNIEnv *env, Context *c)
 Context* load(JNIEnv *env, jobject obj, jboolean certificate)
 {
     // get struct of request
-    struct context* c = getContext(env, obj, certificate);
+    struct context* c = getContext(env, obj, certificate, JNI_TRUE);
 
     // construct request
 
@@ -493,7 +506,7 @@ Context* load(JNIEnv *env, jobject obj, jboolean certificate)
  */
 Context* requireQuery(JNIEnv *env, jobject obj)
 {
-    if (isQueryLoaded(env, obj)) return getContext(env,obj, JNI_FALSE);
+    if (isQueryLoaded(env, obj)) return getContext(env,obj, JNI_FALSE, JNI_FALSE);
     return load(env, obj, JNI_FALSE);
 }
 
@@ -502,7 +515,7 @@ Context* requireQuery(JNIEnv *env, jobject obj)
  */
 Context* requireCertificate(JNIEnv *env, jobject obj)
 {
-    if (isCertificateLoaded(env, obj)) return getContext(env, obj, JNI_TRUE);
+    if (isCertificateLoaded(env, obj)) return getContext(env, obj, JNI_TRUE, JNI_FALSE);
     return load(env, obj, JNI_TRUE);
 }
 
@@ -747,7 +760,9 @@ JNIEXPORT jbyteArray JNICALL Java_org_zowe_commons_attls_AttlsContext_getCertifi
  */
 void issueCommand(JNIEnv *env, jobject obj, int command)
 {
-    Context* c = getContext(env, obj, JNI_FALSE);
+    Context* c = getContext(env, obj, JNI_FALSE, JNI_TRUE);
+    (*env) -> SetBooleanField(env, obj, query_loaded_field, JNI_FALSE);
+    (*env) -> SetBooleanField(env, obj, certificate_loaded_field, JNI_FALSE);
 
     c -> ioctl_buffer -> TTLSi_Ver = TTLS_VERSION1;
     c -> ioctl_buffer -> TTLSi_Req_Type = command;
