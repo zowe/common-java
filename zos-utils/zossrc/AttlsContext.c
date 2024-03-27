@@ -9,6 +9,7 @@
  */
 
 #include "AttlsContext.h"
+
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -84,6 +85,7 @@ const char *JNI_CLASS_PROTOCOL = "org/zowe/commons/attls/Protocol";
 const char *JNI_CLASS_ILLEGAL_ARGUMENT_EXCEPTION = "java/lang/IllegalArgumentException";
 const char *JNI_CLASS_UNKNOWN_ENUM_VALUE_EXCEPTION = "org/zowe/commons/attls/UnknownEnumValueException";
 const char *JNI_CLASS_IOCTL_CALL_EXCEPTION = "org/zowe/commons/attls/IoctlCallException";
+const char *JNI_CLASS_OUT_OF_MEMORY_ERROR = "java/lang/OutOfMemoryError";
 
 /**
  * name of method used in AttlsContext in ASCII
@@ -97,6 +99,7 @@ const char *JNI_METHOD_GET_VALUE = "getValue";
  * error messages in ASCII
  */
 const char *JNI_MESSAGE_CANNOT_CONVERT_USER_ID = "Cannot convert userID";
+const char *MESSAGE_CANNOT_MALLOC = "Not enough space to allocate memory in native code";
 
 /**
  * signatures to get method Arrays.fill - clean up of arrays
@@ -200,12 +203,31 @@ jmethodID protocol_value_of_method_ID;
 jclass arraysClass;
 jmethodID arrays_fill_method_ID;
 
+/**
+ * Exception handling
+ */
+jclass outOfMemoryErrorClazz;
+jclass ioctl_call_exception_clazz;
+jmethodID ioctl_call_exception_constructor;
+jclass illegal_argument_exception_clazz;
+jclass unknown_enum_value_exception_clazz;
+jmethodID unknown_enum_value_exception_constructor;
+jmethodID unknown_enum_value_exception_constructor2;
+
 int strnlen(char *txt, int max) {
     if (max < 0) return 0;
     for (int i = 0; i < max; i++) {
         if (!txt[i]) return i;
     }
     return max;
+}
+
+/**
+ * throw and OutOfMemoryError
+ */
+void throw_out_of_memory(JNIEnv *env)
+{
+    (*env) -> ThrowNew(env, outOfMemoryErrorClazz, MESSAGE_CANNOT_MALLOC);
 }
 
 /**
@@ -220,13 +242,16 @@ jstring get_jstring(JNIEnv *env, char* ebcdic, int length)
         length = realSize;
     }
     char *output = (char*) malloc(length + 1);
+    if (!output) {
+        throw_out_of_memory(env);
+        return NULL;
+    }
     strncpy(output, ebcdic, length);
     output[length] = 0;
 
     int size = __etoa(output);
     if (size < 0) {
-        jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_ILLEGAL_ARGUMENT_EXCEPTION);
-        (*env) -> ThrowNew(env, exception_clazz, JNI_MESSAGE_CANNOT_CONVERT_USER_ID);
+        (*env) -> ThrowNew(env, illegal_argument_exception_clazz, JNI_MESSAGE_CANNOT_CONVERT_USER_ID);
         free(output);
         return NULL;
     }
@@ -242,12 +267,16 @@ jstring get_jstring(JNIEnv *env, char* ebcdic, int length)
 EnumMap* load_enum_map(JNIEnv *env, const char* clazz)
 {
     // construct signature of static method <Enum>.values()
-    char* signature = (char*) __malloc31(
+    char* signature = (char*) malloc(
         strlen(clazz) +
         strlen(JNI_SIGNATURE_METHOD_NONE_ARRAY_PREFIX) +
         strlen(JNI_SIGNATURE_METHOD_SEMICOLON_SUFFIX) +
         1
     );
+    if (!signature) {
+        throw_out_of_memory(env);
+        return NULL;
+    }
     strcpy(signature, JNI_SIGNATURE_METHOD_NONE_ARRAY_PREFIX);
     strcat(signature, clazz);
     strcat(signature, JNI_SIGNATURE_METHOD_SEMICOLON_SUFFIX);
@@ -274,11 +303,19 @@ EnumMap* load_enum_map(JNIEnv *env, const char* clazz)
 
     // construct struct EnumMap with empty values
     EnumMap* out = (EnumMap*) malloc(sizeof(EnumMap));
+    if (!out) {
+        throw_out_of_memory(env);
+        return NULL;
+    }
     out -> max_value = (int) max_value;
     out -> clazz = (*env) -> NewGlobalRef(env, enum_clazz);
     out -> clazzName = clazz;
     int array_size = (max_value + 1) * sizeof(jobject*);
     out -> values = (jobject*) malloc(array_size);
+    if (!out -> values) {
+        throw_out_of_memory(env);
+        return NULL;
+    }
     memset(out -> values, 0, array_size);
 
     // fill values in the array
@@ -296,9 +333,7 @@ EnumMap* load_enum_map(JNIEnv *env, const char* clazz)
  * Throws UnknownEnumValueException with set values
  */
 void throw_unknown_enum_value(JNIEnv *env, EnumMap* enum_map, unsigned char value) {
-    jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_UNKNOWN_ENUM_VALUE_EXCEPTION);
-    jmethodID constructor = (*env) -> GetMethodID(env, exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_VOID);
-    jobject exception = (*env) -> NewObject(env, exception_clazz, constructor, enum_map -> clazz, (jbyte) value);
+    jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor, enum_map -> clazz, (jbyte) value);
     (*env) -> Throw(env, exception);
 }
 
@@ -341,43 +376,85 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 
     // fetch AtllsContext.class
     jclass clazz = (*env) -> FindClass(env, JNI_CLASS_ATTLS_CONTEXT);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     attls_context_clazz = (*env) -> NewGlobalRef(env, clazz);
 
     // fetch size of certificate length
     jfieldID buffer_certificate_size_field = (*env) -> GetStaticFieldID(env, clazz, JNI_PROPERTY_BUFFER_CERTIFICATE_LENGTH, JNI_SIGNATURE_PROPERTY_INTEGER);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     buffer_certificate_size = (*env) -> GetStaticIntField(env, clazz, buffer_certificate_size_field);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
 
     // fetch all fields to properties of AttlsContext
     always_load_certificate_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_ALWAYS_LOAD_CERTIFICATE, JNI_SIGNATURE_PROPERTY_BOOLEAN);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     id_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_ID, JNI_SIGNATURE_PROPERTY_INTEGER);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     ioctl_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_IOCTL, JNI_SIGNATURE_PROPERTY_BYTE_ARRAY);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     buffer_certificate_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_BUFFER_CERTIFICATE, JNI_SIGNATURE_PROPERTY_BYTE_ARRAY);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     query_loaded_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_QUERY_LOADED, JNI_SIGNATURE_PROPERTY_BOOLEAN);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     certificate_loaded_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_CERTIFICATE_LOADED, JNI_SIGNATURE_PROPERTY_BOOLEAN);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     stat_policy_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_STAT_POLICY_CACHE, JNI_SIGNATURE_PROPERTY_STAT_POLICY);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     stat_conn_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_STAT_CONN_CACHE, JNI_SIGNATURE_PROPERTY_STAT_CONN);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     protocol_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_PROTOCOL_CACHE, JNI_SIGNATURE_PROPERTY_PROTOCOL);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     negotiated_cipher2_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_NEGOTIATED_CIPHER_2_CACHE, JNI_SIGNATURE_PROPERTY_STRING);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     security_type_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_SECURITY_TYPE_CACHE, JNI_SIGNATURE_PROPERTY_SECURITY_TYPE);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     user_id_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_USER_ID_CACHE, JNI_SIGNATURE_PROPERTY_STRING);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     fips140_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_FIPS_140_CACHE, JNI_SIGNATURE_PROPERTY_FIPS_140);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     negotiated_cipher4_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_NEGOTIATED_CIPHER_4_CACHE, JNI_SIGNATURE_PROPERTY_STRING);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     negotiated_key_share_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_NEGOTIATED_KEY_SHARE_CACHE, JNI_SIGNATURE_PROPERTY_STRING);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     certificate_cache_field = (*env) -> GetFieldID(env, clazz, JNI_PROPERTY_CERTIFICATE_CACHE, JNI_SIGNATURE_PROPERTY_BYTE_ARRAY);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
 
     // prepare EnumMap for all possible relevant enumerations
     stat_policy_enum_map = load_enum_map(env, JNI_CLASS_STAT_POLICY);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     stat_conn_enum_map = load_enum_map(env, JNI_CLASS_STAT_CONN);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     security_type_enum_map = load_enum_map(env, JNI_CLASS_SECURITY_TYPE);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     fips140_enum_map = load_enum_map(env, JNI_CLASS_FIPS_140);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
 
     // fetch Protocol.class and method Protocol.values() - cannot use EnumMap (it has 2 bytes to identify)
     enum_protocol_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_PROTOCOL));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     protocol_value_of_method_ID = (*env) -> GetStaticMethodID(env, enum_protocol_clazz, JNI_METHOD_VALUE_OF, JNI_SIGNATURE_METHOD_BYTE_BYTE_PROTOCOL);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
 
     // find method Arrays.fill for byte array clean up
     arraysClass = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_SIGNATURE_ARRAYS));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     arrays_fill_method_ID = (*env) -> GetStaticMethodID(env, arraysClass, JNI_SIGNATURE_ARRAYS_FILL, JNI_SIGNATURE_METHOD_BYTE_ARRAY_BYTE_VOID);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+
+    // fetch reference to exceptions
+    outOfMemoryErrorClazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_OUT_OF_MEMORY_ERROR));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    ioctl_call_exception_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_IOCTL_CALL_EXCEPTION));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    ioctl_call_exception_constructor = (*env) -> GetMethodID(env, ioctl_call_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_INT_INT_INT_VOID);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    illegal_argument_exception_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_ILLEGAL_ARGUMENT_EXCEPTION));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    unknown_enum_value_exception_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_UNKNOWN_ENUM_VALUE_EXCEPTION));
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    unknown_enum_value_exception_constructor = (*env) -> GetMethodID(env, unknown_enum_value_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_VOID);
+    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
+    unknown_enum_value_exception_constructor2 = (*env) -> GetMethodID(env, unknown_enum_value_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_BYTE_VOID);
 
     return JNI_VERSION;
 }
@@ -425,6 +502,10 @@ void cleanByteArray(JNIEnv *env, jobject obj, jfieldID arrayField, jboolean setN
 Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean erase)
 {
     Context *c = (Context*) malloc(sizeof(Context));
+    if (!c) {
+        throw_out_of_memory(env);
+        return NULL;
+    }
 
     // flags to indicate if created buffers are already empty (see new array created by Java) - to reduce memset calls
     jboolean emptyIoctlArray = JNI_FALSE;
@@ -485,6 +566,10 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean
  */
 void releaseContext(JNIEnv *env, Context *c)
 {
+    if (!c) {
+        return;
+    }
+
     (*env) -> ReleaseByteArrayElements(env, c -> ioctl_array, (jbyte*) c -> ioctl_buffer, 0);
     (*env) -> DeleteLocalRef(env, c -> ioctl_array);
 
@@ -505,9 +590,11 @@ Context* query(JNIEnv *env, jobject obj, jboolean certificate)
 {
     // get struct of request
     struct context* c = getContext(env, obj, certificate, JNI_TRUE);
+    if (!c) {
+        return NULL;
+    }
 
     // construct request
-
     c -> ioctl_buffer -> TTLSi_Ver = TTLS_VERSION1;
     c -> ioctl_buffer -> TTLSi_Req_Type = TTLS_QUERY_ONLY;
     if (c -> load_certificate) {
@@ -522,9 +609,7 @@ Context* query(JNIEnv *env, jobject obj, jboolean certificate)
 
     if (rcIoctl < 0) {
         // if ioctl returns an error throw exception
-        jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_IOCTL_CALL_EXCEPTION);
-        jmethodID constructor = (*env) -> GetMethodID(env, exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_INT_INT_INT_VOID);
-        jobject exception = (*env) -> NewObject(env, exception_clazz, constructor,
+        jobject exception = (*env) -> NewObject(env, ioctl_call_exception_clazz, ioctl_call_exception_constructor,
             (jint) rcIoctl, (jint) errno, (jint) __errno2());
         (*env) -> Throw(env, exception);
     } else {
@@ -646,12 +731,9 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getProtocol(J
         out = (*env) -> CallStaticObjectMethod(env, enum_protocol_clazz, protocol_value_of_method_ID,
             (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Ver,
             (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Mod);
-        if (!out)
-        {
+        if (!out) {
             // if enum was not fetched, throw exception
-            jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_UNKNOWN_ENUM_VALUE_EXCEPTION);
-            jmethodID constructor = (*env) -> GetMethodID(env, exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_BYTE_VOID);
-            jobject exception = (*env) -> NewObject(env, exception_clazz, constructor, enum_protocol_clazz,
+            jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor2, enum_protocol_clazz,
                 (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Ver,
                 (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Mod);
             (*env) -> Throw(env, exception);
@@ -748,7 +830,10 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getFips140(JN
 JNIEXPORT jbyte JNICALL Java_org_zowe_commons_attls_AttlsContext_getFlags(JNIEnv *env, jobject obj)
 {
     Context* c = requireQuery(env, obj);
-    jbyte out = (jbyte) c -> ioctl_buffer -> TTLSi_Flags;
+    jbyte out = 0;
+    if (! ((*env) -> ExceptionCheck(env))) {
+        out = (jbyte) c -> ioctl_buffer -> TTLSi_Flags;
+    }
     releaseContext(env, c);
     return out;
 }
@@ -799,6 +884,9 @@ JNIEXPORT jbyteArray JNICALL Java_org_zowe_commons_attls_AttlsContext_getCertifi
 void issueCommand(JNIEnv *env, jobject obj, int command)
 {
     Context* c = getContext(env, obj, JNI_FALSE, JNI_TRUE);
+    if (!c) {
+        return;
+    }
 
     // previous fetched data about state and certificate were forgotten. They could be also change because of the command
     (*env) -> SetBooleanField(env, obj, query_loaded_field, JNI_FALSE);
@@ -813,9 +901,7 @@ void issueCommand(JNIEnv *env, jobject obj, int command)
     releaseContext(env, c);
 
     if (rcIoctl < 0) {
-        jclass exception_clazz = (*env) -> FindClass(env, JNI_CLASS_IOCTL_CALL_EXCEPTION);
-        jmethodID constructor = (*env) -> GetMethodID(env, exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_INT_INT_INT_VOID);
-        jobject exception = (*env) -> NewObject(env, exception_clazz, constructor,
+        jobject exception = (*env) -> NewObject(env, ioctl_call_exception_clazz, ioctl_call_exception_constructor,
             (jint) rcIoctl, (jint) errno, (jint) __errno2());
         (*env) -> Throw(env, exception);
         return;
