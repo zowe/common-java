@@ -46,7 +46,6 @@ const char *JNI_SIGNATURE_PROPERTY_FIPS_140 = "Lorg/zowe/commons/attls/Fips140;"
  */
 const char *JNI_SIGNATURE_METHOD_BYTE_BYTE_PROTOCOL = "(BB)Lorg/zowe/commons/attls/Protocol;";
 const char *JNI_SIGNATURE_METHOD_NONE_BYTE = "()B";
-const char *JNI_SIGNATURE_METHOD_ENUM_BYTE_VOID = "(Ljava/lang/Enum;B)V";
 const char *JNI_SIGNATURE_METHOD_ENUM_BYTE_BYTE_VOID = "(Ljava/lang/Enum;BB)V";
 const char *JNI_SIGNATURE_METHOD_INT_INT_INT_VOID = "(III)V";
 const char *JNI_SIGNATURE_METHOD_NONE_ARRAY_PREFIX = "()[L";
@@ -212,7 +211,6 @@ jmethodID ioctl_call_exception_constructor;
 jclass illegal_argument_exception_clazz;
 jclass unknown_enum_value_exception_clazz;
 jmethodID unknown_enum_value_exception_constructor;
-jmethodID unknown_enum_value_exception_constructor2;
 
 int strnlen(char *txt, int max) {
     if (max < 0) return 0;
@@ -333,7 +331,7 @@ EnumMap* load_enum_map(JNIEnv *env, const char* clazz)
  * Throws UnknownEnumValueException with set values
  */
 void throw_unknown_enum_value(JNIEnv *env, EnumMap* enum_map, unsigned char value) {
-    jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor, enum_map -> clazz, (jbyte) value);
+    jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor, enum_map -> clazz, (jbyte) value, (jbyte) 0);
     (*env) -> Throw(env, exception);
 }
 
@@ -452,9 +450,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
     if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
     unknown_enum_value_exception_clazz = (*env) -> NewGlobalRef(env, (*env) -> FindClass(env, JNI_CLASS_UNKNOWN_ENUM_VALUE_EXCEPTION));
     if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
-    unknown_enum_value_exception_constructor = (*env) -> GetMethodID(env, unknown_enum_value_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_VOID);
-    if ((*env) -> ExceptionCheck(env)) return JNI_VERSION;
-    unknown_enum_value_exception_constructor2 = (*env) -> GetMethodID(env, unknown_enum_value_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_BYTE_VOID);
+    unknown_enum_value_exception_constructor = (*env) -> GetMethodID(env, unknown_enum_value_exception_clazz, JNI_METHOD_CONSTRUCTOR, JNI_SIGNATURE_METHOD_ENUM_BYTE_BYTE_VOID);
 
     return JNI_VERSION;
 }
@@ -733,7 +729,7 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_attls_AttlsContext_getProtocol(J
             (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Mod);
         if (!out) {
             // if enum was not fetched, throw exception
-            jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor2, enum_protocol_clazz,
+            jobject exception = (*env) -> NewObject(env, unknown_enum_value_exception_clazz, unknown_enum_value_exception_constructor, enum_protocol_clazz,
                 (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Ver,
                 (jbyte) c -> ioctl_buffer -> TTLSi_SSL_Protocol.Prot_bytes.Prot_Mod);
             (*env) -> Throw(env, exception);
