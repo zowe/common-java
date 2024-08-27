@@ -117,13 +117,19 @@ JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForC
     int reasonCodeRacf = 0;
 
     int rc = __certificate(__CERTIFICATE_AUTHENTICATE, certificateLength, (char*) cCertificate, userId_length, useridRacf);
+    int e = 0;
+    int e2 = 0;
+    if (rc) {
+        e = errno;
+        e2 = __errno2();
+    }
     (*env)->ReleaseByteArrayElements(env, certificate, cCertificate, 0);
 
     e2a(useridRacf, 9);
 
     jstring jUseridRacf = (*env)->NewStringUTF(env, useridRacf);
 
-    return (*env)->NewObject(env, certificateClass, certificateClassCtor, jUseridRacf, rc, errno, __errno2());
+    return (*env)->NewObject(env, certificateClass, certificateClassCtor, jUseridRacf, rc, e, e2);
 }
 
 JNIEXPORT jobject JNICALL Java_org_zowe_commons_usermap_UserMapper_getUserIDForDN(JNIEnv *env, jobject obj, jstring dn, jstring reg){
