@@ -60,7 +60,7 @@ LIB_ATTLS_31 = "libzowe-attls-31.so"
 LIB_ATTLS_64 = "libzowe-attls.so"
 LIB_USERMAP_64 = "libzowe-usermap.so"
 
-all: $(LIB_USERMAP_64) $(LIB_ATTLS_31) $(LIB_ATTLS_64)
+all: $(LIB_USERMAP_64) $(LIB_ATTLS_64)
 
 install:
 	mkdir -p $(PREFIX)
