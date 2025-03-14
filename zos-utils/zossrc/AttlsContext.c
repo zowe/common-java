@@ -527,7 +527,7 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean
 
     // obtain certificate buffer or create new one if needed
     c -> load_certificate = loadCertificate;
-    if (!loadCertificate) {
+    if (!(c -> load_certificate)) {
         c -> load_certificate = (*env) -> GetBooleanField(env, obj, always_load_certificate_field);
     }
     if (c -> load_certificate) {
@@ -544,6 +544,8 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean
         c -> certificate_array = certArray;
         c -> certificate_buffer = (*env) -> GetByteArrayElements(env, certArray, 0);
         c -> certificate_buffer_length = buffer_certificate_size;
+        c -> ioctl_buffer -> TTLSi_BufferPtr = c -> certificate_buffer;
+        c -> ioctl_buffer -> TTLSi_BufferLen = buffer_certificate_size;
 
         if (erase && !emptyCertificateArray) {
             memset(c -> certificate_buffer, 0, buffer_certificate_size);
@@ -552,6 +554,8 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean
         c -> certificate_array = NULL;
         c -> certificate_buffer = NULL;
         c -> certificate_buffer_length = 0;
+        c -> ioctl_buffer -> TTLSi_BufferPtr = NULL;
+        c -> ioctl_buffer -> TTLSi_BufferLen = 0;
 
         if (erase) {
             // current call does not require certificate buffer, but it maybe exists. Clean up it for a next call
@@ -583,7 +587,7 @@ void releaseContext(JNIEnv *env, Context *c)
 }
 
 /**
- * It call ioctl to fetch query or certificate. Query call is done always, the certificate is loaded just if argument
+ * It calls ioctl to fetch query or certificate. Query call is always done, the certificate is loaded only if argument
  * certificate is set to true or alwaysLoadCertificate is set to true.
  * In case of an error during fetching data IoctlCallException is thrown.
  */
@@ -601,9 +605,6 @@ Context* query(JNIEnv *env, jobject obj, jboolean certificate)
     if (c -> load_certificate) {
         c -> ioctl_buffer -> TTLSi_Req_Type |= TTLS_RETURN_CERTIFICATE;
     }
-
-    c -> ioctl_buffer -> TTLSi_BufferPtr = c -> certificate_buffer;
-    c -> ioctl_buffer -> TTLSi_BufferLen = c -> certificate_buffer_length;
 
     // call ioctl
     int rcIoctl = ioctl(c -> socket_id, SIOCTTLSCTL, c -> ioctl_buffer);
@@ -871,7 +872,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_zowe_commons_attls_AttlsContext_getCertifi
     if (! ((*env) -> ExceptionCheck(env))) {
         out = (*env) -> NewByteArray(env, c -> ioctl_buffer -> TTLSi_Cert_Len);
         if (out) {
-            (*env) -> SetByteArrayRegion(env, out, 0, c -> ioctl_buffer -> TTLSi_Cert_Len, c -> ioctl_buffer -> TTLSi_BufferPtr);
+            (*env) -> SetByteArrayRegion(env, out, 0, c -> ioctl_buffer -> TTLSi_Cert_Len, c -> certificate_buffer);
             (*env) -> SetObjectField(env, obj, certificate_cache_field, out);
         }
     }

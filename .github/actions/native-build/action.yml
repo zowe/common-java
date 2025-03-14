@@ -14,9 +14,18 @@ inputs:
   port:
     description: "SSH Port"
     required: true
+  jdkVersion:
+    description: "JDK version"
+    required: false
+    default: "8"
 runs:
   using: "composite"
   steps:
+    - name: Set up JDK ${{ inputs.jdkVersion }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'semeru'
+        java-version: ${{ inputs.jdkVersion }}
     - name: install zowe/cli
       shell: bash
       run: npm install -g @zowe/cli@6.40.23
