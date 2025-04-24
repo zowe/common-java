@@ -1,0 +1,58 @@
+#!/usr/bin/env sh
+# 
+# Gradle scripts are in UtF-8. Run:
+#  chtag -tc ISO8859-1 ./gradlez
+#  chtag -tc ISO8859-1 ./gradlew
+# 
+# Also make sure they are both executable:
+#  chmod +x ./gradlez
+#  chmod +x ./gradlew
+#
+# Running gradle on z/os
+# Since version 3.0 gradle daemon is enabled by default. The daemon use network to communicate with workers, 
+# thus network permissions are required for gradle to bind th entwork address and port. Gradel binds to all IP addresses that can find.
+# If the bind fails, java.net.SocketException is thrown (maybe the gradle port is reserved). Some people stick to gradle 2.9 that does not use the daemon.
+# 
+# Note: the --no-daemon option still uses the gradle daemon, but the daemon is stopped at the end. 
+#
+# Some versions of gradle (8.X, but reported also on 6.X; not sure how much it is related to the gradle version or system setup) 
+# may have problems while workers connecting to the daemon. When everything starts, the gradle worker must be able to connect to the daemon.
+# If in fails, the run fails with the error:
+#  Error: The first result from the daemon was empty.
+# with debug message:
+# [DEBUG] [org.gradle.internal.remote.internal.inet.SocketConnection] Discarding EOFException: java.io.EOFException
+#
+# The daemon log (in $HOME/.gradle/daemon/version/daemon-<processId>.log) shows an error:
+#  [ERROR] [org.gradle.internal.remote.internal.inet.TcpIncomingConnector] Cannot accept connection from remote address /127.0.0.1
+#
+# For some reason, on mainframe gradle thinks that 127.0.0.1 is a remote address. This can beresolved by setting 
+# the OPENSHIFT_IP environment variable. 
+#
+# Gradle is very demanding on disk space, make sure the GRADLE_HOME points to a destination with proper permissions and sufficient free space. 
+#
+# The gradlew does not run on z/os shell since 8.9. You need to edit the first line of gradlew to:
+#  #!/bin/bash
+#
+#
+# Useful resources
+# https://stackoverflow.com/questions/74877706/is-it-possible-to-run-gradle-on-z-os
+# https://stackoverflow.com/questions/25046319/android-studio-failed-gradle-execution-cause-broken-pipe/32777685#32777685
+# https://github.com/gradle/gradle/issues/28348
+# https://github.com/gradle/gradle/issues/32153
+# https://github.com/gradle/gradle/issues/12232
+# 
+
+set -x
+# setup gradle
+export GRADLE_USER_HOME=
+#export LANG=en_US.UTF-8
+export GRADLE_OPTS="-Dfile.encoding=UTF-8"
+export _BPXK_AUTOCVT=ON
+export OPENSHIFT_IP="127.0.0.1"
+
+# setup Java
+export JAVA_HOME=
+export PATH=$JAVA_HOME/bin:$PATH
+
+
+./gradlew --no-daemon "$@"

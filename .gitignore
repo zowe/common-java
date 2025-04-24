@@ -6,3 +6,4 @@ zos-utils/.api-dev/
 .api-dev/
 *.jar
 build/
+node_modules

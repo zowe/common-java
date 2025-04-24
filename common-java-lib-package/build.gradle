@@ -42,11 +42,19 @@ packageCommonLib.doFirst {
     getCommitHash.consumeProcessOutput(commit_hash, command_err)
     getCommitHash.waitForOrKill(1000)
 
+    manifest = manifest.replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
+        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+    
     // GITHUB_REF_NAME and GITHUB_RUN_ID are github actions variables https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
-    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("GITHUB_REF_NAME"))
-                       .replaceAll("\\{\\{build.number\\}\\}", System.getenv("GITHUB_RUN_ID"))
-                       .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
-                       .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+    def githubRefName = System.getenv("GITHUB_REF_NAME")
+    if (githubRefName != null) {
+        manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", githubRefName)
+    }
+
+    def githubRunId = System.getenv("GITHUB_RUN_ID")
+    if (githubRunId != null) {
+        manifest = manifest.replaceAll("\\{\\{build.number\\}\\}", githubRunId)
+    }
 
     def scriptOutputDir = new File("$buildDir/convert/");
     if (!scriptOutputDir.exists()) {
