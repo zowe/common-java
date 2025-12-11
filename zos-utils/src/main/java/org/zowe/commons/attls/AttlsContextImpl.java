@@ -26,11 +26,7 @@ package org.zowe.commons.attls;
  * {@link AttlsContext#BUFFER_CERTIFICATE_LENGTH}.
  */
 public class AttlsContextImpl implements AttlsContext {
-
-    /**
-     * Name of native library
-     */
-    public static final String ATTLS_LIBRARY_NAME = "zowe-attls";
+    
     /**
      * Size of buffer to fetch certificate
      */

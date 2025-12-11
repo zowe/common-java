@@ -24,7 +24,7 @@ public class AttlsNativeLibraries {
 
     public List<String> getNativeLibrariesNames() {
         List<String> libraries = new ArrayList<>();
-        libraries.add(AttlsContextImpl.ATTLS_LIBRARY_NAME);
+        libraries.add(AttlsContext.ATTLS_LIBRARY_NAME);
         return libraries;
     }
 
