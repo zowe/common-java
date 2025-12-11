@@ -12,7 +12,7 @@ package org.zowe.commons.attls;
 import lombok.Value;
 
 /**
- * This exception could be thrown from AT-TLS context ({@link org.zowe.commons.attls.AttlsContext}), when ioctl returns
+ * This exception could be thrown from AT-TLS context ({@link org.zowe.commons.attls.AttlsContextImpl}), when ioctl returns
  * value which is not defined in the Enum. It indicated, that library is older the AT-TLS implementation and it is
  * required to upgrade this library
  */

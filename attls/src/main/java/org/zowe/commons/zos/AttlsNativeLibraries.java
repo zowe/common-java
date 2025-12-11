@@ -9,7 +9,7 @@
  */
 package org.zowe.commons.zos;
 
-import org.zowe.commons.attls.AttlsContext;
+import org.zowe.commons.attls.AttlsContextImpl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,13 +24,13 @@ public class AttlsNativeLibraries {
 
     public List<String> getNativeLibrariesNames() {
         List<String> libraries = new ArrayList<>();
-        libraries.add(AttlsContext.ATTLS_LIBRARY_NAME);
+        libraries.add(AttlsContextImpl.ATTLS_LIBRARY_NAME);
         return libraries;
     }
 
     public static void extractLib(String directory, String fileName) throws IOException {
         File library = new File(directory, fileName);
-        try (InputStream inputStream = AttlsContext.class.getResourceAsStream("/lib/" + fileName)) {
+        try (InputStream inputStream = AttlsContextImpl.class.getResourceAsStream("/lib/" + fileName)) {
             Files.copy(inputStream, library.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             library.delete();
