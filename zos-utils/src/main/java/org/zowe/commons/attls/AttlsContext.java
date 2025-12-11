@@ -14,7 +14,7 @@ public interface AttlsContext {
     /**
      * Name of native library
      */
-    String ATTLS_LIBRARY_NAME = "bcm-apisdk-attls";
+    String ATTLS_LIBRARY_NAME = "zowe-attls";
 
     /**
      * Clean all cached value. Next call will fetch new data via ioctl.
