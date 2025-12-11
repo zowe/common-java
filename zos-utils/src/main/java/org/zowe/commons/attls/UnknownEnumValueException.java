@@ -9,6 +9,7 @@
  */
 package org.zowe.commons.attls;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
@@ -17,6 +18,7 @@ import lombok.Value;
  * required to upgrade this library
  */
 @Value
+@EqualsAndHashCode(callSuper=false)
 public class UnknownEnumValueException extends Exception {
 
     private static final long serialVersionUID = 8662184734113422578L;
@@ -24,5 +26,14 @@ public class UnknownEnumValueException extends Exception {
     private final Enum<?> enumClazz;
     private final byte value;
     private final byte value2;
+
+    public UnknownEnumValueException(Enum<?> enumClazz, byte value, byte value2) {
+
+        super(String.format("Exception in the AttlsContext : enumClazz=%s, value=%d, value2=%d", enumClazz, value, value2));
+
+        this.enumClazz = enumClazz;
+        this.value = value;
+        this.value2 = value2;
+    }
 
 }

@@ -9,6 +9,7 @@
  */
 package org.zowe.commons.attls;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
@@ -16,6 +17,7 @@ import lombok.Value;
  * at https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.hald001/sioc.htm
  */
 @Value
+@EqualsAndHashCode(callSuper=false)
 public class IoctlCallException extends Exception {
 
     private static final long serialVersionUID = 8799435850381286204L;
@@ -23,5 +25,11 @@ public class IoctlCallException extends Exception {
     private final int rc;
     private final int errorNo;
     private final int errorNo2;
+    public IoctlCallException(int rc, int errorNo, int errorNo2) {
+        super(String.format("Unexpected error durng the IOCTL call : rc=%d, errorNo=%d, errorNo2=%d", rc,errorNo, errorNo2));
+        this.rc = rc;
+        this.errorNo = errorNo;
+        this.errorNo2 = errorNo2;
+    }
 
 }

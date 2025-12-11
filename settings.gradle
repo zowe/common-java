@@ -1,4 +1,4 @@
 rootProject.name = 'common-java'
 
-include 'attls'
+include 'zos-utils'
 include 'common-java-lib-package'

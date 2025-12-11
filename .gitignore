@@ -1,7 +1,10 @@
 .gradle/
 build/
 .api-dev/
-.DS_Store
 *.so
 .vscode
 bin/
+zos-utils/.api-dev/
+*.DS_Store
+*.jar
+build/
