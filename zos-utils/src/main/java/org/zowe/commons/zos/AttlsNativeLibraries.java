@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import org.zowe.commons.attls.AttlsContext;
 
 public class AttlsNativeLibraries {
 
