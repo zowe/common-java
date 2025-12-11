@@ -18,12 +18,12 @@ package org.zowe.commons.attls;
  * <p>
  * This context read value lazy, it means that until you call any method, no data are fetched. In case of getting any
  * information, library make call on first time to query or certificate and cache them in internal block of bytes
- * (see {@link AttlsContextImpl#ioctl}. All java object are then created just once time and store into cache properties.
+ * (see {@link AttlsContext#ioctl}. All java object are then created just once time and store into cache properties.
  * Next calling returns only those cached value. If you want to fetch new data, you should call method
- * {@link AttlsContextImpl#clean()}.
+ * {@link AttlsContext#clean()}.
  * <p>
  * For fetching a certificate is needed to prepare memory before, its size is defined by
- * {@link AttlsContextImpl#BUFFER_CERTIFICATE_LENGTH}.
+ * {@link AttlsContext#BUFFER_CERTIFICATE_LENGTH}.
  */
 public class AttlsContextImpl implements AttlsContext {
 
@@ -45,7 +45,7 @@ public class AttlsContextImpl implements AttlsContext {
     /**
      * Control flag to identify if certificate should be fetch in each query call or not
      */
-    private boolean alwaysLoadCertificate;
+    private final boolean alwaysLoadCertificate;
 
     /**
      * FileDescriptior of socket
@@ -109,6 +109,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @throws UnknownEnumValueException StatPolicy does not contain a value (AT-TLS is newer than library)
      * @throws IoctlCallException        unexpected error in call of ioctl
      */
+    @Override
     public native StatPolicy getStatPolicy() throws UnknownEnumValueException, IoctlCallException;
 
     /**
@@ -118,6 +119,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @throws UnknownEnumValueException StatConn does not contain a value (AT-TLS is newer than library)
      * @throws IoctlCallException        unexpected error in call of ioctl
      */
+    @Override
     public native StatConn getStatConn() throws UnknownEnumValueException, IoctlCallException;
 
     /**
@@ -128,16 +130,18 @@ public class AttlsContextImpl implements AttlsContext {
      * @throws UnknownEnumValueException Protocol does not contain a value (AT-TLS is newer than library)
      * @throws IoctlCallException        unexpected error in call of ioctl
      */
+    @Override
     public native Protocol getProtocol() throws UnknownEnumValueException, IoctlCallException;
 
     /**
      * Indicates the negotiated cipher in use for the connection - returned when connection is secure
      * Note: When the negotiated cipher requires four characters, this field will contain the characters '4X'.
-     * {@link org.zowe.commons.attls.AttlsContextImpl#getNegotiatedCipher4()}
+     * {@link org.zowe.commons.attls.AttlsContext#getNegotiatedCipher4()}
      *
      * @return negotiated cipher in use (2 character)
      * @throws IoctlCallException unexpected error in call of ioctl
      */
+    @Override
     public native String getNegotiatedCipher2() throws IoctlCallException;
 
     /**
@@ -147,6 +151,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @throws UnknownEnumValueException Protocol does not contain a value (AT-TLS is newer than library)
      * @throws IoctlCallException        unexpected error in call of ioctl
      */
+    @Override
     public native SecurityType getSecurityType() throws UnknownEnumValueException, IoctlCallException;
 
     /**
@@ -155,6 +160,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @return partner user ID
      * @throws IoctlCallException unexpected error in call of ioctl
      */
+    @Override
     public native String getUserId() throws IoctlCallException;
 
     /**
@@ -164,6 +170,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @throws UnknownEnumValueException Protocol does not contain a value (AT-TLS is newer than library)
      * @throws IoctlCallException        unexpected error in call of ioctl
      */
+    @Override
     public native Fips140 getFips140() throws UnknownEnumValueException, IoctlCallException;
 
     /**
@@ -175,6 +182,7 @@ public class AttlsContextImpl implements AttlsContext {
      * @return AT-TLS flags
      * @throws IoctlCallException unexpected error in call of ioctl
      */
+    @Override
     public native byte getFlags() throws IoctlCallException;
 
     /**
@@ -183,16 +191,18 @@ public class AttlsContextImpl implements AttlsContext {
      * @return negotiated cipher in use (4 character)
      * @throws IoctlCallException unexpected error in call of ioctl
      */
+    @Override
     public native String getNegotiatedCipher4() throws IoctlCallException;
 
 
     /**
      * Returns partner certificate - returned when available. Maximum length of certificate is determinated by
-     * {@link AttlsContextImpl#BUFFER_CERTIFICATE_LENGTH}
+     * {@link AttlsContext#BUFFER_CERTIFICATE_LENGTH}
      *
      * @return partner certificate
      * @throws IoctlCallException unexpected error in call of ioctl
      */
+    @Override
     public native byte[] getCertificate() throws IoctlCallException;
 
     /**
@@ -200,6 +210,7 @@ public class AttlsContextImpl implements AttlsContext {
      *
      * @throws IoctlCallException cannot initialize (ie. not in controlled mode, missing configuration etc.)
      */
+    @Override
     public native void initConnection() throws IoctlCallException;
 
     /**
@@ -207,6 +218,7 @@ public class AttlsContextImpl implements AttlsContext {
      *
      * @throws IoctlCallException cannot reset session (ie. not in controlled mode, missing configuration etc.)
      */
+    @Override
     public native void resetSession() throws IoctlCallException;
 
     /**
@@ -214,6 +226,7 @@ public class AttlsContextImpl implements AttlsContext {
      *
      * @throws IoctlCallException cannot reset cipher (ie. not in controlled mode, missing configuration etc.)
      */
+    @Override
     public native void resetCipher() throws IoctlCallException;
 
     /**
@@ -221,6 +234,15 @@ public class AttlsContextImpl implements AttlsContext {
      *
      * @throws IoctlCallException cannot stop connection (ie. not in controlled mode, missing configuration etc.)
      */
+    @Override
     public native void stopConnection() throws IoctlCallException;
+
+    /**
+     * Allow SSL handshake to timeout
+     *
+     * @throws IoctlCallException cannot allow hand shake timeout (ie. not in controlled mode, missing configuration etc.)
+     */
+    @Override
+    public native void allowHandShakeTimeout() throws IoctlCallException;
 
 }

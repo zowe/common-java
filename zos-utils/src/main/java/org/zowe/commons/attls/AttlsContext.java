@@ -128,4 +128,10 @@ public interface AttlsContext {
      */
     void stopConnection() throws IoctlCallException;
 
+    /**
+     * Allow SSL handshake to timeout
+     * @throws IoctlCallException cannot allow hand shake timeout (ie. not in controlled mode, missing configuration etc.)
+     */
+    void allowHandShakeTimeout() throws IoctlCallException;
+
 }
