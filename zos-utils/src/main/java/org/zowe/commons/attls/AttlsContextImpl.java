@@ -18,12 +18,12 @@ package org.zowe.commons.attls;
  * <p>
  * This context read value lazy, it means that until you call any method, no data are fetched. In case of getting any
  * information, library make call on first time to query or certificate and cache them in internal block of bytes
- * (see {@link AttlsContext#ioctl}. All java object are then created just once time and store into cache properties.
+ * (see {@link AttlsContextImpl#ioctl}. All java object are then created just once time and store into cache properties.
  * Next calling returns only those cached value. If you want to fetch new data, you should call method
- * {@link AttlsContext#clean()}.
+ * {@link AttlsContextImpl#clean()}.
  * <p>
  * For fetching a certificate is needed to prepare memory before, its size is defined by
- * {@link AttlsContext#BUFFER_CERTIFICATE_LENGTH}.
+ * {@link AttlsContextImpl#BUFFER_CERTIFICATE_LENGTH}.
  */
 public class AttlsContextImpl implements AttlsContext {
     
@@ -132,7 +132,7 @@ public class AttlsContextImpl implements AttlsContext {
     /**
      * Indicates the negotiated cipher in use for the connection - returned when connection is secure
      * Note: When the negotiated cipher requires four characters, this field will contain the characters '4X'.
-     * {@link org.zowe.commons.attls.AttlsContext#getNegotiatedCipher4()}
+     * {@link org.zowe.commons.attls.AttlsContextImpl#getNegotiatedCipher4()}
      *
      * @return negotiated cipher in use (2 character)
      * @throws IoctlCallException unexpected error in call of ioctl
@@ -193,7 +193,7 @@ public class AttlsContextImpl implements AttlsContext {
 
     /**
      * Returns partner certificate - returned when available. Maximum length of certificate is determinated by
-     * {@link AttlsContext#BUFFER_CERTIFICATE_LENGTH}
+     * {@link AttlsContextImpl#BUFFER_CERTIFICATE_LENGTH}
      *
      * @return partner certificate
      * @throws IoctlCallException unexpected error in call of ioctl

@@ -485,7 +485,7 @@ jboolean isCertificateLoaded(JNIEnv *env, jobject obj)
 }
 
 /**
- * Methods clean up the byte array in AttlsContext if exists
+ * Methods clean up the byte array in AttlsContextImpl if exists
  */
 void cleanByteArray(JNIEnv *env, jobject obj, jfieldID arrayField, jboolean setNull)
 {
@@ -543,7 +543,7 @@ Context *getContext(JNIEnv *env, jobject obj, jboolean loadCertificate, jboolean
     jboolean emptyIoctlArray = JNI_FALSE;
     jboolean emptyCertificateArray = JNI_FALSE;
 
-    // obtain socket ID from AttlsContext class
+    // obtain socket ID from AttlsContextImpl class
     c->socket_id = (*env)->GetIntField(env, obj, id_field);
 
     // obtain IOCTL object or create new one
