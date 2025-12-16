@@ -10,7 +10,7 @@
 package org.zowe.commons.attls;
 
 /**
- * This exception could be thrown when application asks for AT-TLS data, but the context ({@link AttlsContext})
+ * This exception could be thrown when application asks for AT-TLS data, but the context ({@link AttlsContextImpl})
  * has not been initialized yet ({@link org.zowe.commons.attls.InboundAttls#init(int)}). It can be also thrown when
  * context has disposed yet ({@link org.zowe.commons.attls.InboundAttls#dispose()})
  */

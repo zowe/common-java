@@ -36,7 +36,7 @@ public class InboundAttls {
      * @param id file description of socket
      */
     public static void init(int id) {
-        contexts.set(new AttlsContext(id, alwaysLoadCertificate));
+        contexts.set(new AttlsContextImpl(id, alwaysLoadCertificate));
     }
 
     /**

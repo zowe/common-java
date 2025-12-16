@@ -27,13 +27,13 @@ import static org.mockito.Mockito.*;
 public class InboundAttlsTest {
 
     @Mock
-    private AttlsContext attlsContext;
+    private AttlsContextImpl attlsContext;
 
-    private ThreadLocal<AttlsContext> attlsContexts;
+    private ThreadLocal<AttlsContextImpl> attlsContexts;
 
     @BeforeEach
     public void setUp() {
-        attlsContexts = (ThreadLocal<AttlsContext>) ReflectionTestUtils.getField(InboundAttls.class, "contexts");
+        attlsContexts = (ThreadLocal<AttlsContextImpl>) ReflectionTestUtils.getField(InboundAttls.class, "contexts");
         attlsContexts.set(attlsContext);
     }
 
@@ -65,7 +65,7 @@ public class InboundAttlsTest {
     private void testCommand(String name) {
         try {
             Method inboundAttlsMethod = InboundAttls.class.getMethod(name);
-            Method attlsContextMethod = AttlsContext.class.getMethod(name);
+            Method attlsContextMethod = AttlsContextImpl.class.getMethod(name);
 
             attlsContextMethod.invoke(verify(attlsContext, never()));
             inboundAttlsMethod.invoke(null);
@@ -86,7 +86,7 @@ public class InboundAttlsTest {
     private <T> void testGetter(String name, boolean same, T...values) {
         try {
             Method inboundAttlsMethod = InboundAttls.class.getMethod(name);
-            Method attlsContextMethod = AttlsContext.class.getMethod(name);
+            Method attlsContextMethod = AttlsContextImpl.class.getMethod(name);
 
             for (int i = 0; i < values.length; i++) {
                 attlsContextMethod.invoke(doReturn(values[i]).when(attlsContext));

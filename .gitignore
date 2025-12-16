@@ -1,8 +1,10 @@
-bin/
-.vscode/
 .gradle/
+build/
+.api-dev/
+*.so
+.vscode
+bin/
 zos-utils/.api-dev/
 *.DS_Store
-.api-dev/
 *.jar
 build/

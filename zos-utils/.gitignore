@@ -34,4 +34,5 @@ deploy/templates/jcl/out
 deploy/config/local.ts
 node_modules
 
+build/
 *.so
